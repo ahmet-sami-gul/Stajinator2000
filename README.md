@@ -31,7 +31,7 @@ CV'nizi yükleyin, staj yapmak istediğiniz alanları seçin — AI sizin için 
 ## bilgisayarına indirip de çalıştırabilirsiniz, node.js gereklidir
 **1. Repoyu klonlayın:**
 ```bash
-git clone https://github.com/kullanici-adi/stajinator2000.git
+git clone https://github.com/ahmet-sami-gul/stajinator2000.git
 cd stajinator2000
 ```
 
