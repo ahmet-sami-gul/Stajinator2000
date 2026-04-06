@@ -264,7 +264,7 @@ input[type=password]{letter-spacing:.1em}
         <li><div class="snum">5</div><div><strong>Toplu e-posta gönder</strong><br><span>Listeyi gözden geçir, istemediğin şirketleri çıkar ve tek tıkla hepsine kişiselleştirilmiş başvuru gönder.</span></div></li>
       </ul>
       <div class="note note-amb" style="margin-bottom:20px;">
-        <div><b>Gizlilik ve KVKK:</b> SMTP şifresi ve API anahtarı yalnızca tarayıcı belleğinde tutulur, hiçbir sunucuya kaydedilmez. CV ve kişisel bilgilerin yalnızca senin belirlediğin şirketlere, kendi e-posta hesabın üzerinden iletilir. Gönderim geçmişin yalnızca kendi tarayıcında (localStorage) saklanır.</div>
+        <div><b>Gizlilik ve KVKK:</b> SMTP şifresi ve API anahtarı yalnızca tarayıcı belleğinde tutulur, hiçbir sunucuya kaydedilmez. Ad soyad, e-posta, telefon, LinkedIn ve CV gibi kişisel bilgilerin yalnızca senin belirlediğin şirketlere, kendi e-posta hesabın üzerinden iletilir; sistemde saklanmaz. Gönderim geçmişin yalnızca kendi tarayıcında (localStorage) tutulur.</div>
       </div>
       <div style="display:flex;justify-content:flex-end;">
         <button class="btn btn-p" onclick="go(1)">Başla →</button>
@@ -336,6 +336,10 @@ input[type=password]{letter-spacing:.1em}
       <div class="fg">
         <label>İletişim E-postası (opsiyonel — maile ek metin olarak eklenir)</label>
         <input id="contactEmail" type="email" placeholder="eposta@ornek.com">
+      </div>
+      <div class="row2 fg">
+        <div><label>Telefon (opsiyonel)</label><input id="studentPhone" type="tel" placeholder="+90 555 000 00 00"></div>
+        <div><label>LinkedIn (opsiyonel)</label><input id="studentLinkedIn" type="url" placeholder="linkedin.com/in/kullanici-adi"></div>
       </div>
       <div class="fg">
         <label>E-posta Konusu</label>
@@ -594,7 +598,7 @@ Saygılarımla,
     <div class="card-b" style="display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.7;">
       <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:start;">
         <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>SMTP şifresi & API anahtarı</strong> — Yalnızca tarayıcı belleğinde tutulur. Sayfayı kapattığında silinir. Hiçbir sunucuya iletilmez.</span>
-        <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>CV ve kişisel bilgilerin</strong> — Sunucuya yüklenirken yalnızca geçici bellekte işlenir, diske yazılmaz. E-posta gönderiminden sonra sunucudan silinir.</span>
+        <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>Kişisel bilgilerin (ad soyad, e-posta, telefon, LinkedIn, CV)</strong> — Sunucuya yüklenirken yalnızca geçici bellekte işlenir, diske yazılmaz. E-posta gönderiminden sonra sunucudan silinir.</span>
         <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>Gönderim geçmişi</strong> — Yalnızca kendi tarayıcında (localStorage) saklanır. Başka hiçbir yere gönderilmez, üçüncü taraflarla paylaşılmaz.</span>
         <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>E-postalar</strong> — Doğrudan senin kendi SMTP sunucun üzerinden gider. Sistem e-postalarını okumaz, kopyalamaz veya saklamaz.</span>
         <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>GitHub reposu</strong> — Yalnızca kaynak kodunu içerir. Hiçbir kullanıcı verisi veya şifre bulunmaz.</span>
@@ -636,6 +640,8 @@ const S = {
   contactEmail: '',
   emailSubject: '',
   coverLetter:  '',
+  phone:        '',
+  linkedIn:     '',
   cvFilename:   null,   // original filename for display
   cvBase64:     null,   // base64 encoded CV content
   selectedAreas: new Set(),
@@ -699,6 +705,8 @@ async function go(step) {
       S.studentName  = el('studentName').value.trim();
       S.studentEmail = el('studentEmail').value.trim();
       S.contactEmail = el('contactEmail').value.trim();
+      S.phone        = el('studentPhone').value.trim();
+      S.linkedIn     = el('studentLinkedIn').value.trim();
       S.emailSubject = el('emailSubject').value.trim();
       S.coverLetter  = el('coverLetter').value;
       if (!S.studentName) { alert('Ad Soyad giriniz.'); return; }
@@ -988,11 +996,13 @@ function addManual() {
 
 /* ── SEND PANEL ────────────────────────────────────────────────────────────── */
 async function renderSendPanel() {
-  S.studentName  = el('studentName').value.trim()  || S.studentName;
-  S.studentEmail = el('studentEmail').value.trim() || S.studentEmail;
-  S.contactEmail = el('contactEmail').value.trim() || S.contactEmail;
-  S.emailSubject = el('emailSubject').value.trim() || S.emailSubject;
-  S.coverLetter  = el('coverLetter').value         || S.coverLetter;
+  S.studentName  = el('studentName').value.trim()      || S.studentName;
+  S.studentEmail = el('studentEmail').value.trim()     || S.studentEmail;
+  S.contactEmail = el('contactEmail').value.trim()     || S.contactEmail;
+  S.phone        = el('studentPhone').value.trim()     || S.phone;
+  S.linkedIn     = el('studentLinkedIn').value.trim()  || S.linkedIn;
+  S.emailSubject = el('emailSubject').value.trim()     || S.emailSubject;
+  S.coverLetter  = el('coverLetter').value             || S.coverLetter;
 
   // Geçmişi localStorage'dan oku
   try {
@@ -1078,6 +1088,8 @@ async function doSend() {
         studentEmail: S.studentEmail,
         studentName:  S.studentName,
         contactEmail: S.contactEmail,
+        phone:        S.phone,
+        linkedIn:     S.linkedIn,
         subject:      S.emailSubject || ('Staj Başvurusu — ' + S.studentName),
         coverLetter:  S.coverLetter,
         recipients:   sel.map(p => ({ firma: p.firma, unvan: p.unvan, email: p.email, alan: p.alan })),
@@ -1147,16 +1159,27 @@ function loadHistory() {
 
 /* ── EMAIL PREVIEW (Adım 2) ────────────────────────────────────────────────── */
 function updateEmailPreview() {
-  const name    = el('studentName').value.trim();
-  const smtp    = el('smtpUser').value.trim();
-  const subject = el('emailSubject').value.trim() || ('Staj Başvurusu' + (name ? ' — ' + name : ''));
-  const body    = (el('coverLetter').value || '')
+  const name     = el('studentName').value.trim();
+  const smtp     = el('smtpUser').value.trim();
+  const contact  = el('contactEmail').value.trim();
+  const phone    = el('studentPhone').value.trim();
+  const linkedIn = el('studentLinkedIn').value.trim();
+  const subject  = el('emailSubject').value.trim() || ('Staj Başvurusu' + (name ? ' — ' + name : ''));
+  const body     = (el('coverLetter').value || '')
     .replace(/\{\{firma\}\}/gi,  'Örnek Şirket A.Ş.')
     .replace(/\{\{unvan\}\}/gi,  'İnsan Kaynakları');
 
   el('prev2-from').textContent    = name && smtp ? `"${name}" <${smtp}>` : (name || smtp || '—');
   el('prev2-subject').textContent = subject || '—';
-  el('prev2-body').textContent    = body || '—';
+
+  let preview = body || '—';
+  if (contact || phone || linkedIn) {
+    preview += '\n\n─────────────────────';
+    if (contact)  preview += '\n📧 ' + contact;
+    if (phone)    preview += '\n📞 ' + phone;
+    if (linkedIn) preview += '\n🔗 ' + linkedIn;
+  }
+  el('prev2-body').textContent = preview;
 }
 
 /* ── API PROVIDER ──────────────────────────────────────────────────────────── */
@@ -1198,7 +1221,7 @@ el('studentName').addEventListener('input', () => {
 });
 
 // Canlı e-posta önizlemesi
-['studentName','smtpUser','emailSubject','coverLetter'].forEach(id => {
+['studentName','smtpUser','emailSubject','coverLetter','contactEmail','studentPhone','studentLinkedIn'].forEach(id => {
   el(id).addEventListener('input', updateEmailPreview);
 });
 updateEmailPreview();

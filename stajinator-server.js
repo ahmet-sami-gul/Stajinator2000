@@ -287,7 +287,7 @@ SADECE geçerli JSON döndür:
 
 // ── POST /staj/send ───────────────────────────────────────────────────────────
 app.post('/staj/send', async (req, res) => {
-  const { smtp, studentEmail, studentName, subject, coverLetter, contactEmail, recipients, cvBase64, cvFilename } = req.body;
+  const { smtp, studentEmail, studentName, subject, coverLetter, contactEmail, phone, linkedIn, recipients, cvBase64, cvFilename } = req.body;
 
   if (!smtp || !smtp.user || !smtp.pass)
     return res.status(400).json({ ok: false, error: 'SMTP bilgileri eksik.' });
@@ -329,7 +329,12 @@ app.post('/staj/send', async (req, res) => {
   <div>${body.replace(/\n/g, '<br>')}</div>
   <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
   <p style="color:#555;font-size:13px;">CV dosyam ekte yer almaktadır. Herhangi bir sorunuz için benimle iletişime geçebilirsiniz.</p>
-  ${contactEmail ? `<p style="color:#555;font-size:13px;">İletişim: <a href="mailto:${contactEmail.replace(/"/g,'&quot;').replace(/</g,'&lt;')}" style="color:#6366f1;">${contactEmail.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</a></p>` : ''}
+  ${(contactEmail || phone || linkedIn) ? `
+  <table style="margin-top:4px;border-collapse:collapse;font-size:13px;color:#555;">
+    ${contactEmail ? `<tr><td style="padding:2px 12px 2px 0;white-space:nowrap;">📧</td><td><a href="mailto:${contactEmail.replace(/"/g,'&quot;').replace(/</g,'&lt;')}" style="color:#6366f1;">${contactEmail.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</a></td></tr>` : ''}
+    ${phone       ? `<tr><td style="padding:2px 12px 2px 0;">📞</td><td>${phone.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</td></tr>` : ''}
+    ${linkedIn    ? `<tr><td style="padding:2px 12px 2px 0;">🔗</td><td><a href="${linkedIn.startsWith('http')?linkedIn:'https://'+linkedIn}" style="color:#6366f1;">${linkedIn.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</a></td></tr>` : ''}
+  </table>` : ''}
   <p style="color:#aaa;font-size:11px;margin-top:18px;">Bu e-posta Ahmet Sami Gül'ün geliştirdiği <strong>Stajinatör2000</strong> platformu ile gönderilmiştir.</p>
 </body></html>`;
 

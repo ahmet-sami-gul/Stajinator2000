@@ -49,6 +49,7 @@ Tarayıcıda açın: `http://localhost:3132/stajinator.html`
 
 ### Adım 2 — Başvuru Bilgileri
 - Ad soyad, kişisel e-posta ve ön yazıyı girin
+- İsteğe bağlı: telefon numarası ve LinkedIn profili (e-postada iletişim bilgisi olarak görünür)
 - PDF CV'nizi yükleyin
 
 ### Adım 3 — Alan Seçimi
@@ -105,7 +106,7 @@ Stajinator2000/
 ## Gizlilik ve KVKK
 
 - **SMTP şifresi & API anahtarı** — Yalnızca tarayıcı belleğinde tutulur. Sayfayı kapattığınızda silinir.
-- **CV ve kişisel bilgiler** — Sunucuya yüklenirken yalnızca geçici bellekte işlenir, diske yazılmaz.
+- **Kişisel bilgiler (ad soyad, e-posta, telefon, LinkedIn) ve CV** — Sunucuya yüklenirken yalnızca geçici bellekte işlenir, diske yazılmaz.
 - **Gönderim geçmişi** — Yalnızca kendi tarayıcınızda (localStorage) saklanır, üçüncü taraflarla paylaşılmaz.
 - **E-postalar** — Doğrudan sizin SMTP sunucunuz üzerinden gider. Sistem e-postaları okumaz veya saklamaz.
 - **GitHub reposu** — Yalnızca kaynak kodunu içerir; kullanıcı verisi veya şifre bulunmaz.
