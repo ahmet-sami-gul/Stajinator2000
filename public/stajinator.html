@@ -295,6 +295,22 @@ input[type=password]{letter-spacing:.1em}
         <button class="btn btn-g" onclick="testSmtp()"><span id="smtpSpinWrap"></span>Bağlantıyı Test Et</button>
         <div id="smtpLog" class="logbox" style="flex:1;min-width:200px;min-height:36px;padding:6px 12px;"></div>
       </div>
+      <div class="note note-ind" style="margin-top:14px;">
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;line-height:1.6;">
+          <div><strong>SMTP nedir?</strong> E-posta göndermeyi sağlayan protokoldür. Gmail, Outlook, GoDaddy gibi e-posta sağlayıcıların sunucularına bağlanarak e-posta gönderir.</div>
+          <div><strong>E-postalar nereden gider?</strong> Tüm e-postalar doğrudan senin e-posta hesabından gider. Sistem sadece köprü görevi görür; e-postalarını okumaz veya saklamaz.</div>
+          <div><strong>Şifren güvende mi?</strong> SMTP şifren yalnızca tarayıcı belleğinde tutulur, hiçbir sunucuya veya veritabanına kaydedilmez.</div>
+          <div style="border-top:1px solid var(--br);padding-top:7px;margin-top:2px;"><strong>Sık kullanılan ayarlar:</strong>
+            <div style="display:grid;grid-template-columns:auto auto auto;gap:3px 16px;margin-top:5px;font-family:'DM Mono',monospace;font-size:11px;">
+              <span style="color:var(--mu);">Gmail</span><span>smtp.gmail.com</span><span>587</span>
+              <span style="color:var(--mu);">Outlook</span><span>smtp-mail.outlook.com</span><span>587</span>
+              <span style="color:var(--mu);">GoDaddy</span><span>smtpout.secureserver.net</span><span>465</span>
+              <span style="color:var(--mu);">Yahoo</span><span>smtp.mail.yahoo.com</span><span>465</span>
+            </div>
+          </div>
+          <div>⚠️ <strong>Gmail kullanıcıları:</strong> Normal şifre yerine <a href="https://support.google.com/accounts/answer/185833" target="_blank" style="color:var(--acc2);">Uygulama Şifresi</a> oluşturmanız gerekebilir.</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -617,6 +633,10 @@ Saygılarımla,
         <div><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mu2);">TEKNOLOJİLER</span><br><span style="color:var(--tx);">Node.js · Express · Nodemailer · Anthropic API · Google Gemini API · OpenAI API</span></div>
         <div><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mu2);">LİSANS</span><br><span style="color:var(--tx);">MIT</span></div>
         <div><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mu2);">KAYNAK KOD</span><br><a href="https://github.com/ahmet-sami-gul/Stajinator2000" target="_blank" style="color:var(--acc2);text-decoration:none;font-family:'DM Mono',monospace;font-size:12px;">github.com/ahmet-sami-gul/Stajinator2000</a></div>
+      </div>
+      <div class="note note-ind" style="margin-top:16px;font-size:12px;line-height:1.6;">
+        💬 Fikir, öneri veya geri bildirim için LinkedIn üzerinden ulaşabilirsiniz:<br>
+        <a href="https://www.linkedin.com/in/ahmetsamigul/" target="_blank" style="color:var(--acc2);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;">linkedin.com/in/ahmetsamigul</a>
       </div>
     </div>
   </div>
