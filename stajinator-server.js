@@ -143,6 +143,18 @@ async function searchDDG(query) {
   }
 }
 
+// ── Türk staj & kariyer portalları ───────────────────────────────────────────
+const STAJ_PORTALS = [
+  'kariyer.net',
+  'yenibiris.com',
+  'secretcv.com',
+  'linkedin.com',
+  'staj.com.tr',
+  'stajyer.com',
+  'kampuskariyeri.com',
+  'enuygun.com/staj',
+];
+
 // ── OpenAI için sunucu tarafında e-posta ara ──────────────────────────────────
 async function findCompanyEmail(firma, website) {
   // 1. Önce kendi sitesi
@@ -151,7 +163,7 @@ async function findCompanyEmail(firma, website) {
     if (found) return found;
   }
 
-  // 2. DuckDuckGo araması
+  // 2. Genel DuckDuckGo araması
   for (const q of [`${firma} staj başvuru email`, `${firma} İK iletişim kariyer`]) {
     const { urls, emails } = await searchDDG(q);
     const direct = pickBestEmail(emails);
@@ -161,6 +173,18 @@ async function findCompanyEmail(firma, website) {
       if (found) return found;
     }
   }
+
+  // 3. Staj & kariyer portallarında şirketi ara
+  for (const portal of STAJ_PORTALS) {
+    const { urls, emails } = await searchDDG(`site:${portal} "${firma}" iletişim email staj`);
+    const direct = pickBestEmail(emails);
+    if (direct) return direct;
+    for (const u of urls) {
+      const found = await findRealEmail(u);
+      if (found) return found;
+    }
+  }
+
   return null;
 }
 
@@ -174,8 +198,14 @@ app.post('/staj/research', async (req, res) => {
   const provider = apiProvider || 'claude';
 
   // Claude ve Gemini için: AI web'de arayıp gerçek emaili kendisi bulur
-  const promptWithSearch = `Türkiye'de "${alan}" alanında faaliyet gösteren ve üniversite öğrencilerine staj imkânı sunan ${n} gerçek şirketi web'de araştır.
-Her şirket için resmi sitelerinden, kariyer sayfalarından veya iletişim sayfalarından gerçek bir staj/İK e-posta adresi bul.
+  const promptWithSearch = `Türkiye'de "${alan}" alanında faaliyet gösteren ve üniversite öğrencilerine staj imkânı sunan ${n} gerçek şirketi araştır.
+
+Arama yaparken şu kaynakları kullan:
+- Şirketlerin resmi web siteleri (kariyer, ik, iletisim, staj sayfaları)
+- kariyer.net, yenibiris.com, secretcv.com, linkedin.com, staj.com.tr, stajyer.com, kampuskariyeri.com gibi Türk staj ve kariyer portalları
+- Google/web araması: "[şirket adı] staj başvuru email", "[şirket adı] İK iletişim"
+
+Her şirket için gerçek bir staj veya İK e-posta adresi bul.
 E-posta adresi bulamazsan o şirketi listeye ALMA. Kesinlikle e-posta UYDURMA.
 
 SADECE geçerli JSON döndür, başka hiçbir metin ekleme:
