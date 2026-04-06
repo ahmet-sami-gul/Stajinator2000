@@ -196,6 +196,23 @@ input[type=password]{letter-spacing:.1em}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--br2);border-radius:10px}
+
+/* ── WELCOME MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--bg2);border:1px solid var(--br2);border-radius:14px;max-width:520px;width:100%;padding:32px 28px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,0.18)}
+.modal-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.5px;margin-bottom:4px}
+.modal-logo em{color:var(--acc2);font-style:normal}
+.modal-sub{font-size:12px;color:var(--mu);font-family:'DM Mono',monospace;margin-bottom:24px}
+.modal-steps{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.modal-steps li{display:flex;align-items:flex-start;gap:12px;font-size:13px;line-height:1.5}
+.modal-steps li .snum{width:22px;height:22px;border-radius:50%;background:rgba(99,102,241,0.12);color:var(--acc2);font-family:'DM Mono',monospace;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.modal-steps li strong{color:var(--tx)}
+.modal-steps li span{color:var(--mu)}
+.modal-note{font-size:11px;color:var(--mu);background:var(--bg3);border:1px solid var(--br);border-radius:7px;padding:10px 12px;margin-bottom:22px;line-height:1.6}
+.modal-note b{color:var(--amb)}
+.modal-footer{display:flex;justify-content:flex-end}
+[data-theme="dark"] .modal-box{box-shadow:0 24px 60px rgba(0,0,0,0.5)}
 </style>
 </head>
 <body>
@@ -1046,6 +1063,7 @@ function toggleTheme() {
 /* ── INIT ──────────────────────────────────────────────────────────────────── */
 buildAreaGrid();
 updateStats();
+showWelcomeModal();
 // Tema butonunu mevcut temaya göre ayarla
 el('themeToggle').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
 
@@ -1056,6 +1074,60 @@ el('studentName').addEventListener('input', () => {
     sub.value = 'Staj Başvurusu — ' + el('studentName').value.trim();
   }
 });
+/* ── WELCOME MODAL ── */
+function showWelcomeModal() {
+  if (localStorage.getItem('welcomeSeen')) return;
+  el('welcomeModal').classList.remove('hidden');
+}
+function closeWelcomeModal() {
+  el('welcomeModal').classList.add('hidden');
+  localStorage.setItem('welcomeSeen', '1');
+}
 </script>
+
+<!-- ═══ WELCOME MODAL ══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="welcomeModal">
+  <div class="modal-box">
+    <div class="modal-logo">Stajin<em>atör</em>2000</div>
+    <div class="modal-sub">yapay zeka destekli staj başvuru asistanı</div>
+
+    <ul class="modal-steps">
+      <li>
+        <div class="snum">1</div>
+        <div><strong>SMTP & API bilgilerini gir</strong><br>
+        <span>E-posta hesabının SMTP bilgileri + Claude, Gemini veya ChatGPT API anahtarın.</span></div>
+      </li>
+      <li>
+        <div class="snum">2</div>
+        <div><strong>Bilgilerini ve CV'ni ekle</strong><br>
+        <span>Ad soyad, kişisel e-posta, ön yazı ve PDF CV'n. <code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--acc2)">{{firma}}</code> ve <code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--acc2)">{{unvan}}</code> her e-postada otomatik dolar.</span></div>
+      </li>
+      <li>
+        <div class="snum">3</div>
+        <div><strong>Staj alanını seç</strong><br>
+        <span>Yazılım, Finans, Mimarlık, Hukuk ve daha fazlası.</span></div>
+      </li>
+      <li>
+        <div class="snum">4</div>
+        <div><strong>AI gerçek şirketleri ve İK e-postalarını bulur</strong><br>
+        <span>Şirket siteleri, kariyer.net, linkedin.com ve diğer staj portallarını tarayarak gerçek e-posta adreslerini bulur — asla uydurmaz.</span></div>
+      </li>
+      <li>
+        <div class="snum">5</div>
+        <div><strong>Toplu e-posta gönder</strong><br>
+        <span>Listeyi gözden geçir, istemediğin şirketleri çıkar ve tek tıkla hepsine kişiselleştirilmiş başvuru gönder.</span></div>
+      </li>
+    </ul>
+
+    <div class="modal-note">
+      <b>Önemli:</b> API anahtarların ve SMTP şifren yalnızca tarayıcı belleğinde tutulur, hiçbir yere kaydedilmez. Gönderim geçmişin yalnızca bu tarayıcıda saklanır.
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-p" onclick="closeWelcomeModal()">Başlayalım</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
