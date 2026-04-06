@@ -372,6 +372,20 @@ Saygılarımla,
     </div>
   </div>
 
+  <div class="card fu">
+    <div class="card-h"><div class="card-t">E-posta Önizlemesi</div><span class="badge b-grn">Canlı</span></div>
+    <div class="card-b">
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:12px;margin-bottom:12px;font-family:'DM Mono',monospace;">
+        <span style="color:var(--mu);">Gönderen:</span><span id="prev2-from" style="color:var(--tx);">—</span>
+        <span style="color:var(--mu);">Konu:</span><span id="prev2-subject" style="color:var(--tx);">—</span>
+      </div>
+      <div class="preview-panel" id="prev2-body" style="min-height:120px;">—</div>
+      <div style="font-size:11px;color:var(--mu);margin-top:7px;font-family:'DM Mono',monospace;">
+        💡 <code>{{firma}}</code> ve <code>{{unvan}}</code> gönderimde her şirket için otomatik doldurulur.
+      </div>
+    </div>
+  </div>
+
   <div style="display:flex;justify-content:space-between">
     <button class="btn btn-g" onclick="go(1)">← Geri</button>
     <button class="btn btn-p" onclick="go(3)">Devam →</button>
@@ -726,7 +740,8 @@ function updateStats() {
   el('stFound').textContent = S.prospects.length;
   const sel = S.prospects.filter(p => p._sel !== false).length;
   el('stSel').textContent   = sel;
-  el('stSent').textContent  = S.sentCount;
+  const totalSent = JSON.parse(localStorage.getItem('stajHistory') || '[]').length;
+  el('stSent').textContent  = totalSent;
   el('areaCount').textContent = S.selectedAreas.size + ' seçili';
   el('foundBadge').textContent = S.prospects.length + ' şirket';
 }
@@ -1130,6 +1145,20 @@ function loadHistory() {
     </tr>`).join('');
 }
 
+/* ── EMAIL PREVIEW (Adım 2) ────────────────────────────────────────────────── */
+function updateEmailPreview() {
+  const name    = el('studentName').value.trim();
+  const smtp    = el('smtpUser').value.trim();
+  const subject = el('emailSubject').value.trim() || ('Staj Başvurusu' + (name ? ' — ' + name : ''));
+  const body    = (el('coverLetter').value || '')
+    .replace(/\{\{firma\}\}/gi,  'Örnek Şirket A.Ş.')
+    .replace(/\{\{unvan\}\}/gi,  'İnsan Kaynakları');
+
+  el('prev2-from').textContent    = name && smtp ? `"${name}" <${smtp}>` : (name || smtp || '—');
+  el('prev2-subject').textContent = subject || '—';
+  el('prev2-body').textContent    = body || '—';
+}
+
 /* ── API PROVIDER ──────────────────────────────────────────────────────────── */
 const PROVIDER_META = {
   claude: { label: 'Claude API Key',  placeholder: 'sk-ant-api03-...' },
@@ -1165,7 +1194,14 @@ el('studentName').addEventListener('input', () => {
   if (!sub.value || sub.value.startsWith('Staj Başvurusu')) {
     sub.value = 'Staj Başvurusu — ' + el('studentName').value.trim();
   }
+  updateEmailPreview();
 });
+
+// Canlı e-posta önizlemesi
+['studentName','smtpUser','emailSubject','coverLetter'].forEach(id => {
+  el(id).addEventListener('input', updateEmailPreview);
+});
+updateEmailPreview();
 /* ── HAKKINDA ── */
 function goAbout() {
   el('s0').classList.remove('active'); el('n0').classList.remove('active');
