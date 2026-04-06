@@ -547,8 +547,7 @@ const S = {
   cvBase64:     null,   // base64 encoded CV content
   selectedAreas: new Set(),
   prospects:    [],     // { firma, unvan, email, alan, not, _sel }
-  sentEmails:   new Set(), // daha önce gönderilen e-postalar (oturum içi)
-  sentHistory:  [],        // gönderim geçmişi (oturum içi, kaydedilmez)
+  sentEmails:   new Set(), // daha önce gönderilen e-postalar
   sentCount:    0
 };
 
@@ -888,8 +887,13 @@ async function renderSendPanel() {
   S.emailSubject = el('emailSubject').value.trim() || S.emailSubject;
   S.coverLetter  = el('coverLetter').value         || S.coverLetter;
 
-  // Geçmişi bellekten oku (localStorage'a kaydedilmez)
-  S.sentEmails = new Set(S.sentHistory.map(h => h.email.toLowerCase()));
+  // Geçmişi localStorage'dan oku
+  try {
+    const history = JSON.parse(localStorage.getItem('stajHistory') || '[]');
+    S.sentEmails = new Set(history.map(h => h.email.toLowerCase()));
+  } catch (e) {
+    S.sentEmails = new Set();
+  }
 
   const sel = S.prospects.filter(p => p._sel !== false);
   const first = sel[0] || {};
@@ -989,17 +993,19 @@ async function doSend() {
           s.title = res.error || '';
         }
       });
-      // Başarılı gönderileri bellekte tut (kaydedilmez, sayfa kapanınca silinir)
+      // Başarılı gönderileri localStorage geçmişine kaydet
+      const history = JSON.parse(localStorage.getItem('stajHistory') || '[]');
       d.results.forEach((res, i) => {
         if (res.ok) {
           const p = sel[i];
-          S.sentHistory.push({
+          history.push({
             email: p.email, firma: p.firma, unvan: p.unvan,
             alan: p.alan, konu: S.emailSubject || ('Staj Başvurusu — ' + S.studentName),
             tarih: new Date().toISOString()
           });
         }
       });
+      localStorage.setItem('stajHistory', JSON.stringify(history));
       updateStats();
     } else {
       alert('Hata: ' + (d.error || 'Bilinmeyen hata'));
@@ -1014,7 +1020,7 @@ async function doSend() {
 
 /* ── HISTORY (localStorage) ────────────────────────────────────────────────── */
 function loadHistory() {
-  const data  = S.sentHistory;
+  const data  = JSON.parse(localStorage.getItem('stajHistory') || '[]');
   const tbody = el('historyBody');
   const empty = el('historyEmpty');
   if (!data.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
@@ -1114,7 +1120,7 @@ function closeWelcomeModal() {
     </ul>
 
     <div class="modal-note">
-      <b>Gizlilik:</b> SMTP şifren, API anahtarın, adın, CV'n ve gönderim geçmişin hiçbir yere kaydedilmez. Tüm bilgiler yalnızca sayfa açık olduğu süre boyunca tarayıcı belleğinde tutulur ve sayfa kapanınca silinir.
+      <b>Gizlilik ve KVKK:</b> Girdiğin SMTP şifresi ve API anahtarı yalnızca tarayıcı belleğinde tutulur; hiçbir sunucuya veya veritabanına kaydedilmez. CV ve kişisel bilgilerin yalnızca senin belirlediğin şirketlere, senin e-posta hesabın üzerinden iletilir. Gönderim geçmişin yalnızca kendi tarayıcında (localStorage) saklanır, üçüncü taraflarla paylaşılmaz.
     </div>
 
     <div class="modal-footer">
