@@ -630,6 +630,21 @@ const CATEGORIES = [
 
 /* ── NAVIGATION ────────────────────────────────────────────────────────────── */
 let currentStep = 1;
+const completedSteps = new Set();
+
+function refreshSidebar(activeStep) {
+  el('n7').classList.remove('active');
+  el('s7').classList.remove('active');
+  for (let i = 1; i <= 6; i++) {
+    el('s' + i).classList.toggle('active', i === activeStep);
+    const nav = el('n' + i);
+    nav.classList.toggle('active', i === activeStep);
+    nav.classList.toggle('done', completedSteps.has(i));
+    const num = el('sn' + i);
+    if (completedSteps.has(i)) num.textContent = '✓';
+    else if (i <= 5) num.textContent = i;
+  }
+}
 
 async function go(step) {
   // Validasyon sadece ileri giderken çalışır
@@ -644,6 +659,7 @@ async function go(step) {
       S.apiKey      = el('apiKey').value.trim();
       S.apiProvider = el('apiProvider').value || 'claude';
       if (!S.smtp.user || !S.smtp.pass) { alert('Lütfen SMTP kullanıcı adı ve şifresini girin.'); return; }
+      completedSteps.add(1);
     }
     if (step === 3) {
       S.studentName  = el('studentName').value.trim();
@@ -654,14 +670,17 @@ async function go(step) {
       if (!S.studentName) { alert('Ad Soyad giriniz.'); return; }
       if (!S.coverLetter) { alert('Ön yazı giriniz.'); return; }
       if (!S.cvFilename)  { alert('Lütfen CV dosyanızı yükleyin.'); return; }
+      completedSteps.add(2);
     }
     if (step === 4) {
       if (S.selectedAreas.size === 0) { alert('En az bir staj alanı seçin.'); return; }
       if (!S.apiKey) { alert('Şirket araştırması için API anahtarı gerekli (Adım 1).'); return; }
+      completedSteps.add(3);
     }
     if (step === 5) {
       const sel = S.prospects.filter(p => p._sel !== false);
       if (sel.length === 0) { alert('Gönderilecek en az bir alıcı seçin.'); return; }
+      completedSteps.add(4);
     }
   }
 
@@ -670,17 +689,7 @@ async function go(step) {
   if (step === 6) { loadHistory(); }
 
   currentStep = step;
-  el('n7').classList.remove('active');
-  el('s7').classList.remove('active');
-  for (let i = 1; i <= 6; i++) {
-    el('s' + i).classList.toggle('active', i === step);
-    const nav = el('n' + i);
-    nav.classList.toggle('active', i === step);
-    nav.classList.toggle('done', i < step && i <= 5);
-    const num = el('sn' + i);
-    if (i < step && i <= 5) num.textContent = '✓';
-    else if (i <= 5) num.textContent = i;
-  }
+  refreshSidebar(step);
 }
 
 /* ── HELPERS ───────────────────────────────────────────────────────────────── */
@@ -1069,6 +1078,7 @@ async function doSend() {
         }
       });
       localStorage.setItem('stajHistory', JSON.stringify(history));
+      if (S.sentCount > 0) { completedSteps.add(5); refreshSidebar(currentStep); }
       updateStats();
     } else {
       alert('Hata: ' + (d.error || 'Bilinmeyen hata'));
