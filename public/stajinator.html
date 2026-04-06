@@ -268,8 +268,8 @@ input[type=password]{letter-spacing:.1em}
         </div>
       </div>
       <div class="row2 fg">
-        <div><label>Kullanıcı Adı (E-posta)</label><input id="smtpUser" type="email" placeholder="gonderici@sirket.com"></div>
-        <div><label>Şifre</label><input id="smtpPass" type="password" placeholder="••••••••"></div>
+        <div><label>Kullanıcı Adı (E-posta)</label><input id="smtpUser" type="email" placeholder="gonderici@sirket.com" autocomplete="off"></div>
+        <div><label>Şifre</label><input id="smtpPass" type="password" placeholder="••••••••" autocomplete="new-password"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="btn btn-g" onclick="testSmtp()"><span id="smtpSpinWrap"></span>Bağlantıyı Test Et</button>
@@ -292,7 +292,7 @@ input[type=password]{letter-spacing:.1em}
         </div>
         <div>
           <label id="apiKeyLabel">API Key</label>
-          <input id="apiKey" type="password" placeholder="sk-ant-api03-...">
+          <input id="apiKey" type="password" placeholder="sk-ant-api03-..." autocomplete="off">
         </div>
       </div>
       <div class="note note-ind">ℹ️ API anahtarınız yalnızca tarayıcı belleğinde tutulur, hiçbir yere kaydedilmez.</div>
@@ -547,7 +547,8 @@ const S = {
   cvBase64:     null,   // base64 encoded CV content
   selectedAreas: new Set(),
   prospects:    [],     // { firma, unvan, email, alan, not, _sel }
-  sentEmails:   new Set(), // daha önce gönderilen e-postalar
+  sentEmails:   new Set(), // daha önce gönderilen e-postalar (oturum içi)
+  sentHistory:  [],        // gönderim geçmişi (oturum içi, kaydedilmez)
   sentCount:    0
 };
 
@@ -887,13 +888,8 @@ async function renderSendPanel() {
   S.emailSubject = el('emailSubject').value.trim() || S.emailSubject;
   S.coverLetter  = el('coverLetter').value         || S.coverLetter;
 
-  // Geçmişi localStorage'dan oku
-  try {
-    const history = JSON.parse(localStorage.getItem('stajHistory') || '[]');
-    S.sentEmails = new Set(history.map(h => h.email.toLowerCase()));
-  } catch (e) {
-    S.sentEmails = new Set();
-  }
+  // Geçmişi bellekten oku (localStorage'a kaydedilmez)
+  S.sentEmails = new Set(S.sentHistory.map(h => h.email.toLowerCase()));
 
   const sel = S.prospects.filter(p => p._sel !== false);
   const first = sel[0] || {};
@@ -993,19 +989,17 @@ async function doSend() {
           s.title = res.error || '';
         }
       });
-      // Başarılı gönderileri localStorage geçmişine kaydet
-      const history = JSON.parse(localStorage.getItem('stajHistory') || '[]');
+      // Başarılı gönderileri bellekte tut (kaydedilmez, sayfa kapanınca silinir)
       d.results.forEach((res, i) => {
         if (res.ok) {
           const p = sel[i];
-          history.push({
+          S.sentHistory.push({
             email: p.email, firma: p.firma, unvan: p.unvan,
             alan: p.alan, konu: S.emailSubject || ('Staj Başvurusu — ' + S.studentName),
             tarih: new Date().toISOString()
           });
         }
       });
-      localStorage.setItem('stajHistory', JSON.stringify(history));
       updateStats();
     } else {
       alert('Hata: ' + (d.error || 'Bilinmeyen hata'));
@@ -1020,7 +1014,7 @@ async function doSend() {
 
 /* ── HISTORY (localStorage) ────────────────────────────────────────────────── */
 function loadHistory() {
-  const data  = JSON.parse(localStorage.getItem('stajHistory') || '[]');
+  const data  = S.sentHistory;
   const tbody = el('historyBody');
   const empty = el('historyEmpty');
   if (!data.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
@@ -1120,7 +1114,7 @@ function closeWelcomeModal() {
     </ul>
 
     <div class="modal-note">
-      <b>Önemli:</b> API anahtarların ve SMTP şifren yalnızca tarayıcı belleğinde tutulur, hiçbir yere kaydedilmez. Gönderim geçmişin yalnızca bu tarayıcıda saklanır.
+      <b>Gizlilik:</b> SMTP şifren, API anahtarın, adın, CV'n ve gönderim geçmişin hiçbir yere kaydedilmez. Tüm bilgiler yalnızca sayfa açık olduğu süre boyunca tarayıcı belleğinde tutulur ve sayfa kapanınca silinir.
     </div>
 
     <div class="modal-footer">
