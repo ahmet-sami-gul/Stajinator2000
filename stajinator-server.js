@@ -1,38 +1,16 @@
-const express  = require('express');
-const multer   = require('multer');
+const express    = require('express');
+const multer     = require('multer');
 const nodemailer = require('nodemailer');
-const fetch    = require('node-fetch');
-const path     = require('path');
-const fs       = require('fs');
-const cors     = require('cors');
+const fetch      = require('node-fetch');
+const path       = require('path');
+const cors       = require('cors');
 
 const app  = express();
-const PORT = 3132;
+const PORT = process.env.PORT || 3132;
 
-const CV_DIR       = path.join(__dirname, 'cv-uploads');
-const HISTORY_FILE = path.join(__dirname, 'staj-history.json');
-
-if (!fs.existsSync(CV_DIR)) fs.mkdirSync(CV_DIR, { recursive: true });
-
-let currentCvPath = null;
-
-let stajHistory = [];
-try {
-  if (fs.existsSync(HISTORY_FILE))
-    stajHistory = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8'));
-} catch (e) { stajHistory = []; }
-
-function saveHistory() {
-  fs.writeFileSync(HISTORY_FILE, JSON.stringify(stajHistory, null, 2), 'utf8');
-}
-
-// ── Multer: only PDF ──────────────────────────────────────────────────────────
-const cvStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, CV_DIR),
-  filename:    (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
-});
+// ── Multer: memory storage (Vercel uyumlu, diske yazmaz) ─────────────────────
 const cvUpload = multer({
-  storage: cvStorage,
+  storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     const ok = file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf');
     ok ? cb(null, true) : cb(new Error('Sadece PDF dosyası kabul edilir.'));
@@ -41,7 +19,7 @@ const cvUpload = multer({
 });
 
 app.use(cors());
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '15mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── POST /staj/smtp-verify ────────────────────────────────────────────────────
@@ -63,12 +41,13 @@ app.post('/staj/smtp-verify', async (req, res) => {
 });
 
 // ── POST /staj/upload-cv ──────────────────────────────────────────────────────
+// CV'yi bellekte tutar, base64 olarak frontend'e döndürür (diske yazmaz)
 app.post('/staj/upload-cv', (req, res) => {
   cvUpload.single('cv')(req, res, (err) => {
     if (err) return res.status(400).json({ ok: false, error: err.message });
     if (!req.file) return res.status(400).json({ ok: false, error: 'Dosya bulunamadı.' });
-    currentCvPath = req.file.path;
-    res.json({ ok: true, filename: req.file.originalname, storedAs: req.file.filename });
+    const base64 = req.file.buffer.toString('base64');
+    res.json({ ok: true, filename: req.file.originalname, base64 });
   });
 });
 
@@ -127,15 +106,10 @@ async function searchDDG(query) {
     clearTimeout(timer);
     if (!resp.ok) return { urls: [], emails: [] };
     const html = await resp.text();
-
-    // Snippet'lerdeki direkt emailler
     const emails = html.match(EMAIL_RE) || [];
-
-    // Sonuç URL'leri
     const urls = [...html.matchAll(/class="result__url"[^>]*>\s*([^\s<]+)/g)]
       .map(m => { let u = m[1].trim(); return u.startsWith('http') ? u : 'https://' + u; })
       .slice(0, 5);
-
     return { urls, emails };
   } catch (_) {
     clearTimeout(timer);
@@ -152,18 +126,14 @@ const STAJ_PORTALS = [
   'staj.com.tr',
   'stajyer.com',
   'kampuskariyeri.com',
-  'enuygun.com/staj',
 ];
 
 // ── OpenAI için sunucu tarafında e-posta ara ──────────────────────────────────
 async function findCompanyEmail(firma, website) {
-  // 1. Önce kendi sitesi
   if (website) {
     const found = await findRealEmail(website);
     if (found) return found;
   }
-
-  // 2. Genel DuckDuckGo araması
   for (const q of [`${firma} staj başvuru email`, `${firma} İK iletişim kariyer`]) {
     const { urls, emails } = await searchDDG(q);
     const direct = pickBestEmail(emails);
@@ -173,8 +143,6 @@ async function findCompanyEmail(firma, website) {
       if (found) return found;
     }
   }
-
-  // 3. Staj & kariyer portallarında şirketi ara
   for (const portal of STAJ_PORTALS) {
     const { urls, emails } = await searchDDG(`site:${portal} "${firma}" iletişim email staj`);
     const direct = pickBestEmail(emails);
@@ -184,7 +152,6 @@ async function findCompanyEmail(firma, website) {
       if (found) return found;
     }
   }
-
   return null;
 }
 
@@ -197,7 +164,6 @@ app.post('/staj/research', async (req, res) => {
   const n        = Math.min(Math.max(parseInt(count) || 3, 1), 8);
   const provider = apiProvider || 'claude';
 
-  // Claude ve Gemini için: AI web'de arayıp gerçek emaili kendisi bulur
   const promptWithSearch = `Türkiye'de "${alan}" alanında faaliyet gösteren ve üniversite öğrencilerine staj imkânı sunan ${n} gerçek şirketi araştır.
 
 Arama yaparken şu kaynakları kullan:
@@ -219,7 +185,6 @@ SADECE geçerli JSON döndür, başka hiçbir metin ekleme:
   }
 ]`;
 
-  // OpenAI için: önce şirket listesi al, sonra sunucu tarafında email ara
   const promptNamesOnly = `Türkiye'de "${alan}" alanında faaliyet gösteren ve üniversite öğrencilerine staj imkânı sunabilecek ${n} gerçek şirketi listele. Her biri için resmi web sitesi URL'sini ver.
 
 SADECE geçerli JSON döndür:
@@ -237,7 +202,6 @@ SADECE geçerli JSON döndür:
     let raw = '';
 
     if (provider === 'claude') {
-      // Claude: web_search aracı ile gerçek zamanlı web araması yapar
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -260,7 +224,6 @@ SADECE geçerli JSON döndür:
       raw = (data.content || []).map(b => b.text || '').join('');
 
     } else if (provider === 'gemini') {
-      // Gemini: google_search grounding ile gerçek zamanlı Google araması yapar
       const resp = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
         {
@@ -280,7 +243,6 @@ SADECE geçerli JSON döndür:
       raw = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
 
     } else if (provider === 'openai') {
-      // OpenAI: GPT şirket listesi verir, sunucu tarafında DuckDuckGo + site scraping ile email arar
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -288,9 +250,9 @@ SADECE geçerli JSON döndür:
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model:    'gpt-4o-mini',
+          model:      'gpt-4o-mini',
           max_tokens: 2048,
-          messages: [{ role: 'user', content: promptNamesOnly }]
+          messages:   [{ role: 'user', content: promptNamesOnly }]
         })
       });
       if (!resp.ok) {
@@ -300,7 +262,6 @@ SADECE geçerli JSON döndür:
       const data = await resp.json();
       raw = data.choices?.[0]?.message?.content || '';
 
-      // OpenAI için: AI şirket listesini verdi, şimdi sunucu tarafında email bul
       const match2 = raw.match(/\[[\s\S]*\]/);
       if (!match2) throw new Error('OpenAI geçerli JSON döndürmedi. Ham yanıt: ' + raw.slice(0, 400));
       const aiList = JSON.parse(match2[0]);
@@ -316,7 +277,6 @@ SADECE geçerli JSON döndür:
       return res.status(400).json({ ok: false, error: 'Geçersiz API sağlayıcısı.' });
     }
 
-    // Claude ve Gemini: AI'ın bulduğu JSON'ı parse et
     const match = raw.match(/\[[\s\S]*\]/);
     if (!match) throw new Error('API geçerli JSON döndürmedi. Ham yanıt: ' + raw.slice(0, 400));
     const prospects = JSON.parse(match[0]).filter(p => p.email && p.email.includes('@'));
@@ -329,14 +289,17 @@ SADECE geçerli JSON döndür:
 
 // ── POST /staj/send ───────────────────────────────────────────────────────────
 app.post('/staj/send', async (req, res) => {
-  const { smtp, studentEmail, studentName, subject, coverLetter, contactEmail, recipients } = req.body;
+  const { smtp, studentEmail, studentName, subject, coverLetter, contactEmail, recipients, cvBase64, cvFilename } = req.body;
 
   if (!smtp || !smtp.user || !smtp.pass)
     return res.status(400).json({ ok: false, error: 'SMTP bilgileri eksik.' });
   if (!recipients || recipients.length === 0)
     return res.status(400).json({ ok: false, error: 'Alıcı listesi boş.' });
-  if (!currentCvPath || !fs.existsSync(currentCvPath))
-    return res.status(400).json({ ok: false, error: 'CV dosyası sunucuda bulunamadı. Lütfen tekrar yükleyin.' });
+  if (!cvBase64)
+    return res.status(400).json({ ok: false, error: 'CV verisi eksik. Lütfen tekrar yükleyin.' });
+
+  const cvBuffer = Buffer.from(cvBase64, 'base64');
+  const cvName   = cvFilename || 'cv.pdf';
 
   let transporter;
   try {
@@ -350,9 +313,6 @@ app.post('/staj/send', async (req, res) => {
   } catch (e) {
     return res.status(400).json({ ok: false, error: 'SMTP bağlantısı kurulamadı: ' + e.message });
   }
-
-  const cvBuffer   = fs.readFileSync(currentCvPath);
-  const cvFilename = path.basename(currentCvPath).replace(/^\d+-/, '');
 
   const results = [];
 
@@ -382,18 +342,9 @@ app.post('/staj/send', async (req, res) => {
         to:          r.email,
         subject:     subject || `Staj Başvurusu — ${studentName || ''}`,
         html:        htmlBody,
-        attachments: [{ filename: cvFilename, content: cvBuffer, contentType: 'application/pdf' }]
+        attachments: [{ filename: cvName, content: cvBuffer, contentType: 'application/pdf' }]
       });
-
       results.push({ email: r.email, ok: true });
-      stajHistory.push({
-        email: r.email,
-        firma: r.firma || '',
-        unvan: r.unvan || '',
-        alan:  r.alan  || '',
-        konu:  subject || '',
-        tarih: new Date().toISOString()
-      });
     } catch (e) {
       results.push({ email: r.email, ok: false, error: e.message });
     }
@@ -401,17 +352,17 @@ app.post('/staj/send', async (req, res) => {
     await new Promise(resolve => setTimeout(resolve, 700));
   }
 
-  saveHistory();
   res.json({ ok: true, results });
 });
 
-// ── GET /staj/history ─────────────────────────────────────────────────────────
-app.get('/staj/history', (req, res) => res.json(stajHistory));
+// ── Start (sadece local'de) ───────────────────────────────────────────────────
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\n  ╔══════════════════════════════════════╗`);
+    console.log(`  ║   Stajinatör2000  →  port ${PORT}      ║`);
+    console.log(`  ╚══════════════════════════════════════╝`);
+    console.log(`\n  Aç: http://localhost:${PORT}/stajinator.html\n`);
+  });
+}
 
-// ── Start ─────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n  ╔══════════════════════════════════════╗`);
-  console.log(`  ║   Stajinatör2000  →  port ${PORT}      ║`);
-  console.log(`  ╚══════════════════════════════════════╝`);
-  console.log(`\n  Aç: http://localhost:${PORT}/stajinator.html\n`);
-});
+module.exports = app;

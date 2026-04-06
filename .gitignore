@@ -1,0 +1,5 @@
+node_modules/
+cv-uploads/
+staj-history.json
+.env
+.claude/

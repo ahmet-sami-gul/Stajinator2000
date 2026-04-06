@@ -514,7 +514,7 @@ Ahmet Yılmaz"></textarea>
 
 <script>
 'use strict';
-const API = 'http://localhost:3132';
+const API = '';
 
 /* ── STATE ─────────────────────────────────────────────────────────────────── */
 const S = {
@@ -527,7 +527,7 @@ const S = {
   emailSubject: '',
   coverLetter:  '',
   cvFilename:   null,   // original filename for display
-  cvStored:     null,   // server-side stored filename
+  cvBase64:     null,   // base64 encoded CV content
   selectedAreas: new Set(),
   prospects:    [],     // { firma, unvan, email, alan, not, _sel }
   sentEmails:   new Set(), // daha önce gönderilen e-postalar
@@ -682,7 +682,7 @@ async function uploadCv(file) {
     const d = await r.json();
     if (d.ok) {
       S.cvFilename = d.filename;
-      S.cvStored   = d.storedAs;
+      S.cvBase64   = d.base64;
       el('cvStatus').innerHTML = `<span style="color:var(--grn)">✓ Yüklendi: ${d.filename}</span>`;
       el('cvZone').classList.add('upload-ok');
       updateStats();
@@ -870,10 +870,9 @@ async function renderSendPanel() {
   S.emailSubject = el('emailSubject').value.trim() || S.emailSubject;
   S.coverLetter  = el('coverLetter').value         || S.coverLetter;
 
-  // Geçmişi yükle ve daha önce gönderilen e-postaları kaydet
+  // Geçmişi localStorage'dan oku
   try {
-    const r = await fetch(API + '/staj/history');
-    const history = await r.json();
+    const history = JSON.parse(localStorage.getItem('stajHistory') || '[]');
     S.sentEmails = new Set(history.map(h => h.email.toLowerCase()));
   } catch (e) {
     S.sentEmails = new Set();
@@ -957,7 +956,9 @@ async function doSend() {
         contactEmail: S.contactEmail,
         subject:      S.emailSubject || ('Staj Başvurusu — ' + S.studentName),
         coverLetter:  S.coverLetter,
-        recipients:   sel.map(p => ({ firma: p.firma, unvan: p.unvan, email: p.email, alan: p.alan }))
+        recipients:   sel.map(p => ({ firma: p.firma, unvan: p.unvan, email: p.email, alan: p.alan })),
+        cvBase64:     S.cvBase64,
+        cvFilename:   S.cvFilename
       })
     });
     const d = await r.json();
@@ -975,6 +976,19 @@ async function doSend() {
           s.title = res.error || '';
         }
       });
+      // Başarılı gönderileri localStorage geçmişine kaydet
+      const history = JSON.parse(localStorage.getItem('stajHistory') || '[]');
+      d.results.forEach((res, i) => {
+        if (res.ok) {
+          const p = sel[i];
+          history.push({
+            email: p.email, firma: p.firma, unvan: p.unvan,
+            alan: p.alan, konu: S.emailSubject || ('Staj Başvurusu — ' + S.studentName),
+            tarih: new Date().toISOString()
+          });
+        }
+      });
+      localStorage.setItem('stajHistory', JSON.stringify(history));
       updateStats();
     } else {
       alert('Hata: ' + (d.error || 'Bilinmeyen hata'));
@@ -987,28 +1001,23 @@ async function doSend() {
   el('sendSpin').innerHTML = '';
 }
 
-/* ── HISTORY ───────────────────────────────────────────────────────────────── */
-async function loadHistory() {
-  try {
-    const r = await fetch(API + '/staj/history');
-    const data = await r.json();
-    const tbody = el('historyBody');
-    const empty = el('historyEmpty');
-    if (!data.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
-    empty.style.display = 'none';
-    tbody.innerHTML = [...data].reverse().map((h, i) => `
-      <tr>
-        <td style="color:var(--mu);font-family:'DM Mono',monospace">${data.length - i}</td>
-        <td>${esc(h.firma)}</td>
-        <td style="font-family:'DM Mono',monospace;font-size:11px">${esc(h.email)}</td>
-        <td style="color:var(--acc2);font-size:11px">${esc(h.alan)}</td>
-        <td style="color:var(--mu);font-size:11px">${esc(h.unvan)}</td>
-        <td style="font-size:11px">${esc(h.konu)}</td>
-        <td style="font-size:11px;color:var(--mu);font-family:'DM Mono',monospace">${new Date(h.tarih).toLocaleString('tr-TR')}</td>
-      </tr>`).join('');
-  } catch (e) {
-    el('historyBody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:12px">${e.message}</td></tr>`;
-  }
+/* ── HISTORY (localStorage) ────────────────────────────────────────────────── */
+function loadHistory() {
+  const data  = JSON.parse(localStorage.getItem('stajHistory') || '[]');
+  const tbody = el('historyBody');
+  const empty = el('historyEmpty');
+  if (!data.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  tbody.innerHTML = [...data].reverse().map((h, i) => `
+    <tr>
+      <td style="color:var(--mu);font-family:'DM Mono',monospace">${data.length - i}</td>
+      <td>${esc(h.firma)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px">${esc(h.email)}</td>
+      <td style="color:var(--acc2);font-size:11px">${esc(h.alan)}</td>
+      <td style="color:var(--mu);font-size:11px">${esc(h.unvan)}</td>
+      <td style="font-size:11px">${esc(h.konu)}</td>
+      <td style="font-size:11px;color:var(--mu);font-family:'DM Mono',monospace">${new Date(h.tarih).toLocaleString('tr-TR')}</td>
+    </tr>`).join('');
 }
 
 /* ── API PROVIDER ──────────────────────────────────────────────────────────── */
