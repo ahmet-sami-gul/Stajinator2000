@@ -248,6 +248,8 @@ input[type=password]{letter-spacing:.1em}
     <div>Seçili alıcı: <span id="stSel" style="color:var(--acc2)">0</span></div>
     <div>Gönderilen: <span id="stSent" style="color:var(--grn)">0</span></div>
   </div>
+  <div class="s-divider"></div>
+  <div class="s-item" id="n7" onclick="goAbout()"><div class="s-num" id="sn7" style="font-size:12px;font-weight:700;">i</div><div class="s-lbl">Hakkında</div></div>
 </nav>
 
 <!-- ═══ MAIN ══════════════════════════════════════════════════════════════════ -->
@@ -526,6 +528,65 @@ Ahmet Yılmaz"></textarea>
   </div>
 </div>
 
+<!-- ─── HAKKINDA ──────────────────────────────────────────────────────────── -->
+<div class="sec" id="s7">
+
+  <div class="card fu">
+    <div class="card-h"><div class="card-t">Nasıl Çalışır?</div></div>
+    <div class="card-b" style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(99,102,241,0.12);color:var(--acc2);font-family:'DM Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+        <div><div style="font-size:13px;font-weight:500;margin-bottom:2px;">SMTP & API Ayarları</div><div style="font-size:12px;color:var(--mu);line-height:1.6;">E-posta göndermek için kendi e-posta hesabının SMTP bilgilerini (Gmail, Outlook, GoDaddy vb.) ve şirket araştırması için Claude, Gemini veya ChatGPT API anahtarını girersin.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(99,102,241,0.12);color:var(--acc2);font-family:'DM Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+        <div><div style="font-size:13px;font-weight:500;margin-bottom:2px;">Başvuru Bilgileri & CV</div><div style="font-size:12px;color:var(--mu);line-height:1.6;">Ad soyad, e-posta, ön yazı ve PDF CV'ni girersin. Ön yazında <code style="font-family:'DM Mono',monospace;font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;">{{firma}}</code> ve <code style="font-family:'DM Mono',monospace;font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;">{{unvan}}</code> kullanırsan her e-postada otomatik doldurulur.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(99,102,241,0.12);color:var(--acc2);font-family:'DM Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+        <div><div style="font-size:13px;font-weight:500;margin-bottom:2px;">Alan Seçimi</div><div style="font-size:12px;color:var(--mu);line-height:1.6;">Yazılım, Finans, Mimarlık, Hukuk, Tasarım ve daha pek çok sektörden staj yapmak istediğin alanları seçersin. Birden fazla alan seçilebilir.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(99,102,241,0.12);color:var(--acc2);font-family:'DM Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4</div>
+        <div><div style="font-size:13px;font-weight:500;margin-bottom:2px;">AI Şirket Araştırması</div><div style="font-size:12px;color:var(--mu);line-height:1.6;">Seçtiğin AI (Claude → Anthropic web araması, Gemini → Google araması, ChatGPT → DuckDuckGo + site tarama) Türkiye'deki gerçek şirketleri bulur ve resmi sitelerinden, kariyer.net, linkedin.com, stajyer.com gibi portallardan gerçek İK e-posta adreslerini çeker. E-posta bulunamayan şirketler listeye girmez, asla uydurma adres kullanılmaz.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(99,102,241,0.12);color:var(--acc2);font-family:'DM Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">5</div>
+        <div><div style="font-size:13px;font-weight:500;margin-bottom:2px;">Toplu Gönderim</div><div style="font-size:12px;color:var(--mu);line-height:1.6;">Şirket listesini gözden geçirir, istemediğini çıkarır ve "Gönder"e basarsın. Her şirkete kişiselleştirilmiş ön yazı + CV eki ile e-posta, senin kendi e-posta hesabından gider.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fu">
+    <div class="card-h"><div class="card-t">Veri ve Gizlilik</div><span class="badge b-grn">KVKK Uyumlu</span></div>
+    <div class="card-b" style="display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.7;">
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:start;">
+        <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>SMTP şifresi & API anahtarı</strong> — Yalnızca tarayıcı belleğinde tutulur. Sayfayı kapattığında silinir. Hiçbir sunucuya iletilmez.</span>
+        <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>CV ve kişisel bilgilerin</strong> — Sunucuya yüklenirken yalnızca geçici bellekte işlenir, diske yazılmaz. E-posta gönderiminden sonra sunucudan silinir.</span>
+        <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>Gönderim geçmişi</strong> — Yalnızca kendi tarayıcında (localStorage) saklanır. Başka hiçbir yere gönderilmez, üçüncü taraflarla paylaşılmaz.</span>
+        <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>E-postalar</strong> — Doğrudan senin kendi SMTP sunucun üzerinden gider. Sistem e-postalarını okumaz, kopyalamaz veya saklamaz.</span>
+        <span style="color:var(--grn);font-size:15px;margin-top:1px;">✓</span><span><strong>GitHub reposu</strong> — Yalnızca kaynak kodunu içerir. Hiçbir kullanıcı verisi veya şifre bulunmaz.</span>
+      </div>
+      <div class="note note-amb" style="margin-top:6px;">API anahtarın; seçtiğin AI sağlayıcısına (Anthropic, Google veya OpenAI) doğrudan iletilir. Bu sağlayıcıların kendi gizlilik politikaları geçerlidir.</div>
+    </div>
+  </div>
+
+  <div class="card fu">
+    <div class="card-h"><div class="card-t">Proje Hakkında</div></div>
+    <div class="card-b" style="font-size:13px;line-height:1.8;color:var(--mu);">
+      <p style="margin-bottom:12px;"><span style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--tx);">Stajinatör2000</span>, üniversite öğrencilerinin staj başvuru sürecini otomatikleştirmek amacıyla geliştirilmiş açık kaynaklı bir web uygulamasıdır.</p>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mu2);">GELİŞTİRİCİ</span><br><span style="color:var(--tx);font-weight:500;">Ahmet Sami Gül</span></div>
+        <div><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mu2);">YAZILIM ARACI</span><br><span style="color:var(--tx);">Claude Code <span style="color:var(--mu);font-size:12px;">(Anthropic)</span></span></div>
+        <div><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mu2);">TEKNOLOJİLER</span><br><span style="color:var(--tx);">Node.js · Express · Nodemailer · Anthropic API · Google Gemini API · OpenAI API</span></div>
+        <div><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mu2);">LİSANS</span><br><span style="color:var(--tx);">MIT</span></div>
+        <div><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mu2);">KAYNAK KOD</span><br><a href="https://github.com/ahmet-sami-gul/Stajinator2000" target="_blank" style="color:var(--acc2);text-decoration:none;font-family:'DM Mono',monospace;font-size:12px;">github.com/ahmet-sami-gul/Stajinator2000</a></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 </main><!-- /.main -->
 </div><!-- /.shell -->
 
@@ -609,6 +670,8 @@ async function go(step) {
   if (step === 6) { loadHistory(); }
 
   currentStep = step;
+  el('n7').classList.remove('active');
+  el('s7').classList.remove('active');
   for (let i = 1; i <= 6; i++) {
     el('s' + i).classList.toggle('active', i === step);
     const nav = el('n' + i);
@@ -1074,6 +1137,16 @@ el('studentName').addEventListener('input', () => {
     sub.value = 'Staj Başvurusu — ' + el('studentName').value.trim();
   }
 });
+/* ── HAKKINDA ── */
+function goAbout() {
+  for (let i = 1; i <= 6; i++) {
+    el('s' + i).classList.remove('active');
+    el('n' + i).classList.remove('active');
+  }
+  el('s7').classList.add('active');
+  el('n7').classList.add('active');
+}
+
 /* ── WELCOME MODAL ── */
 function showWelcomeModal() {
   if (localStorage.getItem('welcomeSeen')) return;
