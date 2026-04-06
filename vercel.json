@@ -1,20 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "stajinator-server.js",
-      "use": "@vercel/node"
+  "functions": {
+    "stajinator-server.js": {
+      "maxDuration": 60
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*)",
       "dest": "stajinator-server.js"
     }
-  ],
-  "functions": {
-    "stajinator-server.js": {
-      "maxDuration": 60
-    }
-  }
+  ]
 }
