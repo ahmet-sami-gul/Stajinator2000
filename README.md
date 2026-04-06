@@ -1,87 +1,70 @@
 # Stajinatör2000
 
-Staj başvurularını otomatikleştiren, yapay zeka destekli bir web uygulaması.
+Yapay zeka destekli staj başvuru asistanı. Sektör seçiminden toplu e-posta gönderimne kadar tüm süreci otomatikleştirir.
 
-CV'nizi yükleyin, staj yapmak istediğiniz alanları seçin — AI sizin için şirket listesi oluştursun ve başvuru e-postalarını otomatik göndersin.
+**Geliştirici:** Ahmet Sami Gül · **Araç:** Claude Code (Anthropic) · **Lisans:** MIT
 
 ---
 
 ## Özellikler
 
-- **AI destekli şirket araştırması** — Claude, Gemini veya ChatGPT kullanarak seçtiğiniz alanlardaki şirketlerin İK iletişim bilgilerini otomatik üretir
-- **Kişiselleştirilmiş e-posta** — Her şirkete özel ön yazı gönderir (`{{firma}}` ve `{{unvan}}` placeholder'ları otomatik doldurulur)
-- **CV eki** — PDF formatındaki CV'nizi her e-postaya otomatik ekler
-- **Gönderim geçmişi** — Kimlere gönderildiğini kayıt altında tutar
-- **3 farklı AI sağlayıcısı** — Claude (Anthropic), Gemini (Google) veya ChatGPT (OpenAI) ile çalışır
+- **Gerçek İK e-posta adresleri** — AI, şirket sitelerini, kariyer.net, linkedin.com ve diğer staj portallarını tarayarak gerçek İK e-postalarını bulur. E-posta bulunamayan şirket listeye girmez, asla uydurma adres kullanılmaz.
+- **3 farklı AI sağlayıcısı** — Claude (Anthropic web araması), Gemini (Google araması) veya ChatGPT (DuckDuckGo + site tarama)
+- **Kişiselleştirilmiş e-posta** — `{{firma}}` ve `{{unvan}}` her e-postada otomatik doldurulur
+- **CV eki** — PDF CV her e-postaya otomatik eklenir
+- **Gönderim geçmişi** — Tarayıcıda (localStorage) saklanır
+- **Vercel uyumlu** — Sunucusuz (serverless) olarak deploy edilebilir
 
 ---
 
-## Gereksinimler
+## Hızlı Başlangıç
 
-- [Node.js](https://nodejs.org/) (v18 veya üzeri)
-- Bir SMTP e-posta hesabı (Gmail, GoDaddy, Outlook vb.)
-- Aşağıdakilerden en az bir tanesinin API anahtarı:
-  - [Anthropic (Claude)](https://console.anthropic.com/)
-  - [Google (Gemini)](https://aistudio.google.com/app/apikey)
-  - [OpenAI (ChatGPT)](https://platform.openai.com/api-keys)
+### Vercel (önerilen)
 
----
+Repo'yu fork'layın ve [vercel.com](https://vercel.com) üzerinden import edin. Ekstra ayar gerekmez.
 
-## Kurulum
-## bilgisayarına indirip de çalıştırabilirsiniz, node.js gereklidir
-**1. Repoyu klonlayın:**
+### Yerel Çalıştırma
+
+**Gereksinimler:** [Node.js](https://nodejs.org/) v18+
+
 ```bash
-git clone https://github.com/kullanici-adi/stajinator2000.git
-cd stajinator2000
-```
-
-**2. Bağımlılıkları yükleyin:**
-```bash
+git clone https://github.com/ahmet-sami-gul/Stajinator2000.git
+cd Stajinator2000
 npm install
-```
-
-**3. Sunucuyu başlatın:**
-```bash
 npm start
 ```
 
-**4. Tarayıcıda açın:**
-```
-http://localhost:3132/stajinator.html
-```
+Tarayıcıda açın: `http://localhost:3132/stajinator.html`
 
 ---
 
 ## Kullanım
 
-Uygulama 5 adımda çalışır:
-
 ### Adım 1 — SMTP & API Ayarları
-- E-posta göndermek için kullanacağınız hesabın SMTP bilgilerini girin
-- Şirket araştırması için kullanmak istediğiniz AI sağlayıcısını ve API anahtarını seçin
+- E-posta göndereceğiniz hesabın SMTP bilgilerini girin
+- AI sağlayıcısını (Claude / Gemini / ChatGPT) ve API anahtarını seçin
 
-> **SMTP nedir?** E-posta göndermeyi sağlayan protokoldür. Gmail için `smtp.gmail.com:587`, GoDaddy için `smtpout.secureserver.net:465` kullanılır.
+> **SMTP:** Gmail → `smtp.gmail.com:587`, GoDaddy → `smtpout.secureserver.net:465`
+> **Gmail kullanıcıları:** [Uygulama Şifresi](https://support.google.com/accounts/answer/185833) oluşturmanız gerekebilir.
 
 ### Adım 2 — Başvuru Bilgileri
-- Adınızı, e-postanızı ve ön yazınızı girin
-- CV'nizi (PDF) yükleyin
-- İsteğe bağlı olarak maile eklenecek iletişim e-postanızı girin
+- Ad soyad, kişisel e-posta ve ön yazıyı girin
+- PDF CV'nizi yükleyin
 
 ### Adım 3 — Alan Seçimi
-Staj yapmak istediğiniz alanları seçin (Yazılım, Finans, Mimarlık, Hukuk vb.)
+Yazılım, Finans, Mimarlık, Hukuk ve daha pek çok sektörden istediğiniz alanları seçin.
 
 ### Adım 4 — Şirket Araştırması
-- "Araştır" butonuna tıklayın — AI her alan için şirket listesi oluşturur
-- Listeden göndermek istemediklerinizi çıkarabilir, e-posta adreslerini düzenleyebilirsiniz
+"Araştır" butonuna tıklayın — AI her alan için gerçek şirket ve İK e-postalarını bulur. Listeyi düzenleyebilir, istemediğinizi çıkarabilirsiniz.
 
-> ⚠️ AI tarafından üretilen e-posta adresleri doğru olmayabilir. Göndermeden önce kontrol etmeniz önerilir.
+> ⚠️ Bulunan e-posta adreslerini göndermeden önce doğrulamanız önerilir.
 
 ### Adım 5 — Gönder
-- Önizlemeyi kontrol edin ve "Gönder" butonuna tıklayın
+Önizlemeyi kontrol edin ve "Gönder" butonuna tıklayın. Her şirkete kişiselleştirilmiş e-posta + CV eki, kendi e-posta hesabınızdan gider.
 
 ---
 
-## SMTP Ayarları
+## SMTP Referans Tablosu
 
 | Servis | Sunucu | Port |
 |--------|--------|------|
@@ -90,19 +73,16 @@ Staj yapmak istediğiniz alanları seçin (Yazılım, Finans, Mimarlık, Hukuk v
 | GoDaddy | `smtpout.secureserver.net` | `465` |
 | Yahoo | `smtp.mail.yahoo.com` | `465` |
 
-> **Gmail kullanıcıları:** Google hesabınızda "Uygulama Şifresi" oluşturmanız gerekebilir. [Nasıl yapılır?](https://support.google.com/accounts/answer/185833)
-
 ---
 
 ## Proje Yapısı
 
 ```
-stajinator2000/
-├── stajinator-server.js   # Backend — Express sunucu, AI araştırma, e-posta gönderimi
+Stajinator2000/
+├── stajinator-server.js   # Backend — Express, AI araştırma, e-posta gönderimi
 ├── public/
-│   └── stajinator.html    # Frontend — tek sayfalık arayüz
-├── cv-uploads/            # Yüklenen CV'ler (otomatik oluşturulur)
-├── staj-history.json      # Gönderim geçmişi (otomatik oluşturulur)
+│   └── stajinator.html    # Frontend — tek sayfalık arayüz (SPA)
+├── vercel.json            # Vercel deploy yapılandırması
 └── package.json
 ```
 
@@ -114,25 +94,22 @@ stajinator2000/
 |-----------|---------|
 | Node.js + Express | Web sunucu |
 | Nodemailer | SMTP ile e-posta gönderimi |
-| Multer | PDF dosya yükleme |
-| Anthropic API | Claude ile şirket araştırması |
-| Google Gemini API | Gemini ile şirket araştırması |
-| OpenAI API | ChatGPT ile şirket araştırması |
+| Multer (memory storage) | PDF yükleme — diske yazmaz |
+| Anthropic API | Claude + web_search aracı |
+| Google Gemini API | Gemini + google_search grounding |
+| OpenAI API | GPT-4o-mini + DuckDuckGo + site tarama |
+| @vercel/node | Serverless deploy |
 
 ---
 
-## Güvenlik
+## Gizlilik ve KVKK
 
-- API anahtarları ve SMTP şifreleri yalnızca tarayıcı belleğinde tutulur, diske kaydedilmez
-- CV dosyaları yalnızca yerel sunucuda (`cv-uploads/`) saklanır
-- Uygulama yalnızca yerel ağda (`localhost`) çalışır; internete açık bir sunucuya deploy ederseniz kimlik doğrulama eklemeniz önerilir
-
----
-
-## Lisans
-
-MIT
+- **SMTP şifresi & API anahtarı** — Yalnızca tarayıcı belleğinde tutulur. Sayfayı kapattığınızda silinir.
+- **CV ve kişisel bilgiler** — Sunucuya yüklenirken yalnızca geçici bellekte işlenir, diske yazılmaz.
+- **Gönderim geçmişi** — Yalnızca kendi tarayıcınızda (localStorage) saklanır, üçüncü taraflarla paylaşılmaz.
+- **E-postalar** — Doğrudan sizin SMTP sunucunuz üzerinden gider. Sistem e-postaları okumaz veya saklamaz.
+- **GitHub reposu** — Yalnızca kaynak kodunu içerir; kullanıcı verisi veya şifre bulunmaz.
 
 ---
 
-*Stajinatör2000byahmet-sami-gul*
+*Stajinatör2000 — Ahmet Sami Gül tarafından Claude Code ile geliştirilmiştir.*
