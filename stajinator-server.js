@@ -72,41 +72,93 @@ app.post('/staj/upload-cv', (req, res) => {
   });
 });
 
-// ── Web sitesinden gerçek HR e-postası bul ────────────────────────────────────
+// ── Yardımcı sabitler ─────────────────────────────────────────────────────────
+const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+const HR_RE    = /\b(ik|hr|kariyer|staj|insan|human|recruit|talent)\b/i;
+const SKIP_RE  = /noreply|no-reply|donotreply|example|test\b|sentry|@sentry|@gmail\.com|@hotmail|@yahoo/i;
+
+function pickBestEmail(emails) {
+  const valid = [...new Set(emails)].filter(e => e.length < 80 && !SKIP_RE.test(e));
+  return valid.find(e => HR_RE.test(e)) || valid[0] || null;
+}
+
+// ── Şirket web sitesini tara ─────────────────────────────────────────────────
+async function scrapeEmails(url) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 7000);
+  try {
+    const resp = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+    });
+    clearTimeout(timer);
+    if (!resp.ok) return [];
+    const html = await resp.text();
+    return html.match(EMAIL_RE) || [];
+  } catch (_) {
+    clearTimeout(timer);
+    return [];
+  }
+}
+
 async function findRealEmail(websiteUrl) {
-  const base = websiteUrl.replace(/\/$/, '');
-  const pages = [
-    base + '/ik',
-    base + '/kariyer',
-    base + '/insan-kaynaklari',
-    base + '/staj',
-    base + '/iletisim',
-    base + '/hr',
-    base + '/contact',
-    base,
-  ];
+  const base  = websiteUrl.replace(/\/$/, '');
+  const pages = ['/ik', '/kariyer', '/insan-kaynaklari', '/staj', '/iletisim', '/hr', '/contact', ''];
+  for (const suffix of pages) {
+    const found = pickBestEmail(await scrapeEmails(base + suffix));
+    if (found) return found;
+  }
+  return null;
+}
 
-  const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
-  const HR_RE    = /ik|hr|kariyer|staj|insan|human|recruit|talent/i;
-  const SKIP_RE  = /noreply|no-reply|donotreply|example|test\b|sentry|@sentry/i;
+// ── DuckDuckGo ile web araması ────────────────────────────────────────────────
+async function searchDDG(query) {
+  const url = 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(query);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const resp = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8'
+      }
+    });
+    clearTimeout(timer);
+    if (!resp.ok) return { urls: [], emails: [] };
+    const html = await resp.text();
 
-  for (const url of pages) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 6000);
-    try {
-      const resp = await fetch(url, {
-        signal: controller.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; StajBot/1.0)' }
-      });
-      clearTimeout(timer);
-      if (!resp.ok) continue;
-      const html = await resp.text();
-      const all  = [...new Set(html.match(EMAIL_RE) || [])].filter(e => !SKIP_RE.test(e));
-      const hr   = all.filter(e => HR_RE.test(e));
-      if (hr.length)  return hr[0];
-      if (all.length) return all[0];
-    } catch (_) {
-      clearTimeout(timer);
+    // Snippet'lerdeki direkt emailler
+    const emails = html.match(EMAIL_RE) || [];
+
+    // Sonuç URL'leri
+    const urls = [...html.matchAll(/class="result__url"[^>]*>\s*([^\s<]+)/g)]
+      .map(m => { let u = m[1].trim(); return u.startsWith('http') ? u : 'https://' + u; })
+      .slice(0, 5);
+
+    return { urls, emails };
+  } catch (_) {
+    clearTimeout(timer);
+    return { urls: [], emails: [] };
+  }
+}
+
+// ── OpenAI için sunucu tarafında e-posta ara ──────────────────────────────────
+async function findCompanyEmail(firma, website) {
+  // 1. Önce kendi sitesi
+  if (website) {
+    const found = await findRealEmail(website);
+    if (found) return found;
+  }
+
+  // 2. DuckDuckGo araması
+  for (const q of [`${firma} staj başvuru email`, `${firma} İK iletişim kariyer`]) {
+    const { urls, emails } = await searchDDG(q);
+    const direct = pickBestEmail(emails);
+    if (direct) return direct;
+    for (const u of urls) {
+      const found = await findRealEmail(u);
+      if (found) return found;
     }
   }
   return null;
@@ -121,20 +173,33 @@ app.post('/staj/research', async (req, res) => {
   const n        = Math.min(Math.max(parseInt(count) || 3, 1), 8);
   const provider = apiProvider || 'claude';
 
-  // AI sadece şirket adı + resmi website döndürür — e-posta uydurmaz
-  const prompt = `Türkiye'de "${alan}" alanında faaliyet gösteren ve üniversite öğrencilerine staj imkânı sunabilecek ${n} adet gerçek şirket listele.
-
-Şirketler gerçek ve tanınmış Türk şirketleri ya da çok uluslu şirketlerin Türkiye ofisleri olmalı.
-Her şirket için SADECE resmi web sitesi URL'sini ver — e-posta adresi UYDURMA, website alanını boş bırak eğer bilmiyorsan.
+  // Claude ve Gemini için: AI web'de arayıp gerçek emaili kendisi bulur
+  const promptWithSearch = `Türkiye'de "${alan}" alanında faaliyet gösteren ve üniversite öğrencilerine staj imkânı sunan ${n} gerçek şirketi web'de araştır.
+Her şirket için resmi sitelerinden, kariyer sayfalarından veya iletişim sayfalarından gerçek bir staj/İK e-posta adresi bul.
+E-posta adresi bulamazsan o şirketi listeye ALMA. Kesinlikle e-posta UYDURMA.
 
 SADECE geçerli JSON döndür, başka hiçbir metin ekleme:
 [
   {
     "firma": "Şirket Adı A.Ş.",
     "unvan": "İnsan Kaynakları",
+    "email": "gercek@sirket.com.tr",
+    "alan": "${alan}",
+    "not": "Neden uygun — 1 cümle"
+  }
+]`;
+
+  // OpenAI için: önce şirket listesi al, sonra sunucu tarafında email ara
+  const promptNamesOnly = `Türkiye'de "${alan}" alanında faaliyet gösteren ve üniversite öğrencilerine staj imkânı sunabilecek ${n} gerçek şirketi listele. Her biri için resmi web sitesi URL'sini ver.
+
+SADECE geçerli JSON döndür:
+[
+  {
+    "firma": "Şirket Adı A.Ş.",
+    "unvan": "İnsan Kaynakları",
     "website": "https://www.sirket.com.tr",
     "alan": "${alan}",
-    "not": "Bu şirketin staj programı için neden uygun olduğu — 1 cümle"
+    "not": "Neden uygun — 1 cümle"
   }
 ]`;
 
@@ -142,6 +207,7 @@ SADECE geçerli JSON döndür, başka hiçbir metin ekleme:
     let raw = '';
 
     if (provider === 'claude') {
+      // Claude: web_search aracı ile gerçek zamanlı web araması yapar
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -152,7 +218,8 @@ SADECE geçerli JSON döndür, başka hiçbir metin ekleme:
         body: JSON.stringify({
           model:      'claude-opus-4-6',
           max_tokens: 4096,
-          messages:   [{ role: 'user', content: prompt }]
+          tools:      [{ type: 'web_search_20250305', name: 'web_search', max_uses: n * 3 }],
+          messages:   [{ role: 'user', content: promptWithSearch }]
         })
       });
       if (!resp.ok) {
@@ -163,12 +230,16 @@ SADECE geçerli JSON döndür, başka hiçbir metin ekleme:
       raw = (data.content || []).map(b => b.text || '').join('');
 
     } else if (provider === 'gemini') {
+      // Gemini: google_search grounding ile gerçek zamanlı Google araması yapar
       const resp = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptWithSearch }] }],
+            tools:    [{ google_search: {} }]
+          })
         }
       );
       if (!resp.ok) {
@@ -176,9 +247,10 @@ SADECE geçerli JSON döndür, başka hiçbir metin ekleme:
         return res.status(resp.status).json({ ok: false, error: e.error?.message || 'Gemini API hatası.' });
       }
       const data = await resp.json();
-      raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      raw = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
 
     } else if (provider === 'openai') {
+      // OpenAI: GPT şirket listesi verir, sunucu tarafında DuckDuckGo + site scraping ile email arar
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -186,9 +258,9 @@ SADECE geçerli JSON döndür, başka hiçbir metin ekleme:
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model:      'gpt-4o-mini',
-          max_tokens: 4096,
-          messages:   [{ role: 'user', content: prompt }]
+          model:    'gpt-4o-mini',
+          max_tokens: 2048,
+          messages: [{ role: 'user', content: promptNamesOnly }]
         })
       });
       if (!resp.ok) {
@@ -198,25 +270,28 @@ SADECE geçerli JSON döndür, başka hiçbir metin ekleme:
       const data = await resp.json();
       raw = data.choices?.[0]?.message?.content || '';
 
+      // OpenAI için: AI şirket listesini verdi, şimdi sunucu tarafında email bul
+      const match2 = raw.match(/\[[\s\S]*\]/);
+      if (!match2) throw new Error('OpenAI geçerli JSON döndürmedi. Ham yanıt: ' + raw.slice(0, 400));
+      const aiList = JSON.parse(match2[0]);
+
+      const prospects = [];
+      for (const p of aiList) {
+        const email = await findCompanyEmail(p.firma, p.website);
+        if (email) prospects.push({ firma: p.firma, unvan: p.unvan, email, alan: p.alan, not: p.not });
+      }
+      return res.json({ ok: true, prospects });
+
     } else {
       return res.status(400).json({ ok: false, error: 'Geçersiz API sağlayıcısı.' });
     }
 
+    // Claude ve Gemini: AI'ın bulduğu JSON'ı parse et
     const match = raw.match(/\[[\s\S]*\]/);
     if (!match) throw new Error('API geçerli JSON döndürmedi. Ham yanıt: ' + raw.slice(0, 400));
-    const aiList = JSON.parse(match[0]);
-
-    // Her şirket için web sitesini tara, gerçek e-posta bul
-    const prospects = [];
-    for (const p of aiList) {
-      if (!p.website) continue;
-      const email = await findRealEmail(p.website);
-      if (email) {
-        prospects.push({ firma: p.firma, unvan: p.unvan, email, alan: p.alan, not: p.not });
-      }
-    }
-
+    const prospects = JSON.parse(match[0]).filter(p => p.email && p.email.includes('@'));
     res.json({ ok: true, prospects });
+
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }
