@@ -22,6 +22,10 @@ app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.get('/', (req, res) => {
+  res.redirect('/stajinator.html');
+});
+
 // ── POST /staj/smtp-verify ────────────────────────────────────────────────────
 app.post('/staj/smtp-verify', async (req, res) => {
   const { host, port, user, pass } = req.body;
