@@ -197,22 +197,12 @@ input[type=password]{letter-spacing:.1em}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--br2);border-radius:10px}
 
-/* ── WELCOME MODAL ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
-.modal-overlay.hidden{display:none}
-.modal-box{background:var(--bg2);border:1px solid var(--br2);border-radius:14px;max-width:520px;width:100%;padding:32px 28px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,0.18)}
-.modal-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.5px;margin-bottom:4px}
-.modal-logo em{color:var(--acc2);font-style:normal}
-.modal-sub{font-size:12px;color:var(--mu);font-family:'DM Mono',monospace;margin-bottom:24px}
-.modal-steps{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
-.modal-steps li{display:flex;align-items:flex-start;gap:12px;font-size:13px;line-height:1.5}
-.modal-steps li .snum{width:22px;height:22px;border-radius:50%;background:rgba(99,102,241,0.12);color:var(--acc2);font-family:'DM Mono',monospace;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.modal-steps li strong{color:var(--tx)}
-.modal-steps li span{color:var(--mu)}
-.modal-note{font-size:11px;color:var(--mu);background:var(--bg3);border:1px solid var(--br);border-radius:7px;padding:10px 12px;margin-bottom:22px;line-height:1.6}
-.modal-note b{color:var(--amb)}
-.modal-footer{display:flex;justify-content:flex-end}
-[data-theme="dark"] .modal-box{box-shadow:0 24px 60px rgba(0,0,0,0.5)}
+/* ── WELCOME STEPS ── */
+.welcome-steps{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.welcome-steps li{display:flex;align-items:flex-start;gap:12px;font-size:13px;line-height:1.5}
+.welcome-steps li .snum{width:22px;height:22px;border-radius:50%;background:rgba(99,102,241,0.12);color:var(--acc2);font-family:'DM Mono',monospace;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.welcome-steps li strong{color:var(--tx)}
+.welcome-steps li span{color:var(--mu)}
 </style>
 </head>
 <body>
@@ -232,8 +222,10 @@ input[type=password]{letter-spacing:.1em}
 
 <!-- ═══ SIDEBAR ══════════════════════════════════════════════════════════════ -->
 <nav class="sidebar">
+  <div class="s-item active" id="n0" onclick="goWelcome()" style="margin:6px 8px;border-radius:7px;"><div class="s-num" id="sn0" style="font-size:13px;">👋</div><div class="s-lbl" style="font-weight:500;">Merhaba 👋</div></div>
+  <div class="s-divider"></div>
   <div class="s-section">Adımlar</div>
-  <div class="s-item active" id="n1" onclick="go(1)"><div class="s-num" id="sn1">1</div><div class="s-lbl">SMTP & API</div></div>
+  <div class="s-item" id="n1" onclick="go(1)"><div class="s-num" id="sn1">1</div><div class="s-lbl">SMTP & API</div></div>
   <div class="s-item" id="n2" onclick="go(2)"><div class="s-num" id="sn2">2</div><div class="s-lbl">Başvuru Bilgileri</div></div>
   <div class="s-item" id="n3" onclick="go(3)"><div class="s-num" id="sn3">3</div><div class="s-lbl">Alan Seçimi</div></div>
   <div class="s-item" id="n4" onclick="go(4)"><div class="s-num" id="sn4">4</div><div class="s-lbl">Şirket Araştır</div></div>
@@ -255,8 +247,34 @@ input[type=password]{letter-spacing:.1em}
 <!-- ═══ MAIN ══════════════════════════════════════════════════════════════════ -->
 <main class="main">
 
+<!-- ─── KARŞILAMA ──────────────────────────────────────────────────────────── -->
+<div class="sec active" id="s0">
+  <div class="card fu">
+    <div class="card-h">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px;">Stajin<span style="color:var(--acc2)">atör</span>2000</div>
+      <span class="badge b-ind" style="margin-left:8px;">Staj Başvuru Ajanı</span>
+    </div>
+    <div class="card-b">
+      <p style="font-size:13px;color:var(--mu);margin-bottom:20px;line-height:1.7;">Yapay zeka destekli staj başvuru asistanı. Sektör seçiminden e-posta gönderimne kadar tüm süreci otomatik hale getirir.</p>
+      <ul class="welcome-steps">
+        <li><div class="snum">1</div><div><strong>SMTP & API bilgilerini gir</strong><br><span>E-posta hesabının SMTP bilgileri + Claude, Gemini veya ChatGPT API anahtarın.</span></div></li>
+        <li><div class="snum">2</div><div><strong>Bilgilerini ve CV'ni ekle</strong><br><span>Ad soyad, kişisel e-posta, ön yazı ve PDF CV'n. <code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--acc2)">{{firma}}</code> ve <code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--acc2)">{{unvan}}</code> her e-postada otomatik dolar.</span></div></li>
+        <li><div class="snum">3</div><div><strong>Staj alanını seç</strong><br><span>Yazılım, Finans, Mimarlık, Hukuk ve daha fazlası.</span></div></li>
+        <li><div class="snum">4</div><div><strong>AI gerçek şirketleri ve İK e-postalarını bulur</strong><br><span>Şirket siteleri, kariyer.net, linkedin.com ve diğer staj portallarını tarayarak gerçek e-posta adreslerini bulur — asla uydurmaz.</span></div></li>
+        <li><div class="snum">5</div><div><strong>Toplu e-posta gönder</strong><br><span>Listeyi gözden geçir, istemediğin şirketleri çıkar ve tek tıkla hepsine kişiselleştirilmiş başvuru gönder.</span></div></li>
+      </ul>
+      <div class="note note-amb" style="margin-bottom:20px;">
+        <div><b>Gizlilik ve KVKK:</b> SMTP şifresi ve API anahtarı yalnızca tarayıcı belleğinde tutulur, hiçbir sunucuya kaydedilmez. CV ve kişisel bilgilerin yalnızca senin belirlediğin şirketlere, kendi e-posta hesabın üzerinden iletilir. Gönderim geçmişin yalnızca kendi tarayıcında (localStorage) saklanır.</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;">
+        <button class="btn btn-p" onclick="go(1)">Başla →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ─── ADIM 1: SMTP & API ─────────────────────────────────────────────────── -->
-<div class="sec active" id="s1">
+<div class="sec" id="s1">
   <div class="card fu">
     <div class="card-h"><div class="card-t">SMTP Ayarları</div><span class="badge b-ind">Adım 1/5</span></div>
     <div class="card-b">
@@ -270,7 +288,7 @@ input[type=password]{letter-spacing:.1em}
         </div>
       </div>
       <div class="row2 fg">
-        <div><label>Kullanıcı Adı (E-posta)</label><input id="smtpUser" type="email" placeholder="gonderici@sirket.com" autocomplete="off"></div>
+        <div><label>Kullanıcı Adı (E-posta)</label><input id="smtpUser" type="email" placeholder="eposta@ornek.com" autocomplete="off"></div>
         <div><label>Şifre</label><input id="smtpPass" type="password" placeholder="••••••••" autocomplete="new-password"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -312,12 +330,12 @@ input[type=password]{letter-spacing:.1em}
     <div class="card-h"><div class="card-t">Öğrenci Bilgileri</div><span class="badge b-ind">Adım 2/5</span></div>
     <div class="card-b">
       <div class="row2 fg">
-        <div><label>Ad Soyad</label><input id="studentName" type="text" placeholder="Ahmet Yılmaz"></div>
-        <div><label>Kişisel E-posta (Reply-To)</label><input id="studentEmail" type="email" placeholder="ahmet@gmail.com"></div>
+        <div><label>Ad Soyad</label><input id="studentName" type="text" placeholder="Adınız Soyadınız"></div>
+        <div><label>Kişisel E-posta (Reply-To)</label><input id="studentEmail" type="email" placeholder="eposta@ornek.com"></div>
       </div>
       <div class="fg">
         <label>İletişim E-postası (opsiyonel — maile ek metin olarak eklenir)</label>
-        <input id="contactEmail" type="email" placeholder="ahmet@gmail.com">
+        <input id="contactEmail" type="email" placeholder="eposta@ornek.com">
       </div>
       <div class="fg">
         <label>E-posta Konusu</label>
@@ -327,14 +345,14 @@ input[type=password]{letter-spacing:.1em}
         <label>Kendinizi Tanıtın / Ön Yazı</label>
         <textarea id="coverLetter" rows="9" placeholder="Sayın {{unvan}},
 
-Ben Ahmet Yılmaz, İstanbul Teknik Üniversitesi Bilgisayar Mühendisliği 3. sınıf öğrencisiyim. {{firma}} bünyesinde staj yapmak istiyorum.
+Ben [Adınız Soyadınız], [Üniversiteniz] [Bölümünüz] [sınıfınız]. sınıf öğrencisiyim. {{firma}} bünyesinde staj yapmak istiyorum.
 
-Python, Java ve web teknolojileri konusunda deneyimliyim. Geçen yıl üniversite bünyesinde yapay zekâ projesinde yer aldım.
+[Becerilerinizi ve deneyimlerinizi buraya yazın.]
 
 Staj fırsatı değerlendirmelerinizde beni göz önünde bulundurmanızı rica ederim.
 
 Saygılarımla,
-Ahmet Yılmaz"></textarea>
+[Adınız Soyadınız]"></textarea>
         <div style="font-size:11px;color:var(--mu);margin-top:5px;font-family:'DM Mono',monospace;">
           💡 <code>{{firma}}</code> → şirket adı  ·  <code>{{unvan}}</code> → alıcı unvanı (otomatik değiştirilir)
         </div>
@@ -629,10 +647,12 @@ const CATEGORIES = [
 ];
 
 /* ── NAVIGATION ────────────────────────────────────────────────────────────── */
-let currentStep = 1;
+let currentStep = 0;
 const completedSteps = new Set();
 
 function refreshSidebar(activeStep) {
+  el('n0').classList.toggle('active', activeStep === 0);
+  el('s0').classList.toggle('active', activeStep === 0);
   el('n7').classList.remove('active');
   el('s7').classList.remove('active');
   for (let i = 1; i <= 6; i++) {
@@ -1136,7 +1156,6 @@ function toggleTheme() {
 /* ── INIT ──────────────────────────────────────────────────────────────────── */
 buildAreaGrid();
 updateStats();
-showWelcomeModal();
 // Tema butonunu mevcut temaya göre ayarla
 el('themeToggle').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
 
@@ -1149,6 +1168,7 @@ el('studentName').addEventListener('input', () => {
 });
 /* ── HAKKINDA ── */
 function goAbout() {
+  el('s0').classList.remove('active'); el('n0').classList.remove('active');
   for (let i = 1; i <= 6; i++) {
     el('s' + i).classList.remove('active');
     el('n' + i).classList.remove('active');
@@ -1157,58 +1177,13 @@ function goAbout() {
   el('n7').classList.add('active');
 }
 
-/* ── WELCOME MODAL ── */
-function showWelcomeModal() {
-  el('welcomeModal').classList.remove('hidden');
-}
-function closeWelcomeModal() {
-  el('welcomeModal').classList.add('hidden');
+/* ── KARŞILAMA ── */
+function goWelcome() {
+  currentStep = 0;
+  refreshSidebar(0);
 }
 </script>
 
-<!-- ═══ WELCOME MODAL ══════════════════════════════════════════════════════════ -->
-<div class="modal-overlay hidden" id="welcomeModal">
-  <div class="modal-box">
-    <div class="modal-logo">Stajin<em>atör</em>2000</div>
-    <div class="modal-sub">yapay zeka destekli staj başvuru asistanı</div>
-
-    <ul class="modal-steps">
-      <li>
-        <div class="snum">1</div>
-        <div><strong>SMTP & API bilgilerini gir</strong><br>
-        <span>E-posta hesabının SMTP bilgileri + Claude, Gemini veya ChatGPT API anahtarın.</span></div>
-      </li>
-      <li>
-        <div class="snum">2</div>
-        <div><strong>Bilgilerini ve CV'ni ekle</strong><br>
-        <span>Ad soyad, kişisel e-posta, ön yazı ve PDF CV'n. <code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--acc2)">{{firma}}</code> ve <code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--acc2)">{{unvan}}</code> her e-postada otomatik dolar.</span></div>
-      </li>
-      <li>
-        <div class="snum">3</div>
-        <div><strong>Staj alanını seç</strong><br>
-        <span>Yazılım, Finans, Mimarlık, Hukuk ve daha fazlası.</span></div>
-      </li>
-      <li>
-        <div class="snum">4</div>
-        <div><strong>AI gerçek şirketleri ve İK e-postalarını bulur</strong><br>
-        <span>Şirket siteleri, kariyer.net, linkedin.com ve diğer staj portallarını tarayarak gerçek e-posta adreslerini bulur — asla uydurmaz.</span></div>
-      </li>
-      <li>
-        <div class="snum">5</div>
-        <div><strong>Toplu e-posta gönder</strong><br>
-        <span>Listeyi gözden geçir, istemediğin şirketleri çıkar ve tek tıkla hepsine kişiselleştirilmiş başvuru gönder.</span></div>
-      </li>
-    </ul>
-
-    <div class="modal-note">
-      <b>Gizlilik ve KVKK:</b> Girdiğin SMTP şifresi ve API anahtarı yalnızca tarayıcı belleğinde tutulur; hiçbir sunucuya veya veritabanına kaydedilmez. CV ve kişisel bilgilerin yalnızca senin belirlediğin şirketlere, senin e-posta hesabın üzerinden iletilir. Gönderim geçmişin yalnızca kendi tarayıcında (localStorage) saklanır, üçüncü taraflarla paylaşılmaz.
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn btn-p" onclick="closeWelcomeModal()">Başlayalım</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>

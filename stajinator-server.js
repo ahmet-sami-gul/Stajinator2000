@@ -64,7 +64,7 @@ function pickBestEmail(emails) {
 // ── Şirket web sitesini tara ─────────────────────────────────────────────────
 async function scrapeEmails(url) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 7000);
+  const timer = setTimeout(() => controller.abort(), 3000);
   try {
     const resp = await fetch(url, {
       signal: controller.signal,
@@ -82,7 +82,7 @@ async function scrapeEmails(url) {
 
 async function findRealEmail(websiteUrl) {
   const base  = websiteUrl.replace(/\/$/, '');
-  const pages = ['/ik', '/kariyer', '/insan-kaynaklari', '/staj', '/iletisim', '/hr', '/contact', ''];
+  const pages = ['/kariyer', '/ik', '/iletisim', ''];
   for (const suffix of pages) {
     const found = pickBestEmail(await scrapeEmails(base + suffix));
     if (found) return found;
@@ -94,7 +94,7 @@ async function findRealEmail(websiteUrl) {
 async function searchDDG(query) {
   const url = 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(query);
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
+  const timer = setTimeout(() => controller.abort(), 4000);
   try {
     const resp = await fetch(url, {
       signal: controller.signal,
@@ -130,24 +130,17 @@ const STAJ_PORTALS = [
 
 // ── OpenAI için sunucu tarafında e-posta ara ──────────────────────────────────
 async function findCompanyEmail(firma, website) {
-  if (website) {
-    const found = await findRealEmail(website);
-    if (found) return found;
-  }
-  for (const q of [`${firma} staj başvuru email`, `${firma} İK iletişim kariyer`]) {
-    const { urls, emails } = await searchDDG(q);
+  // Site scrape + DDG search paralel çalışır
+  const [siteRes, ddgRes] = await Promise.allSettled([
+    website ? findRealEmail(website) : Promise.resolve(null),
+    searchDDG(`${firma} staj başvuru email İK iletişim`)
+  ]);
+  if (siteRes.status === 'fulfilled' && siteRes.value) return siteRes.value;
+  if (ddgRes.status === 'fulfilled') {
+    const { urls, emails } = ddgRes.value;
     const direct = pickBestEmail(emails);
     if (direct) return direct;
-    for (const u of urls) {
-      const found = await findRealEmail(u);
-      if (found) return found;
-    }
-  }
-  for (const portal of STAJ_PORTALS) {
-    const { urls, emails } = await searchDDG(`site:${portal} "${firma}" iletişim email staj`);
-    const direct = pickBestEmail(emails);
-    if (direct) return direct;
-    for (const u of urls) {
+    for (const u of urls.slice(0, 2)) {
       const found = await findRealEmail(u);
       if (found) return found;
     }
@@ -266,11 +259,12 @@ SADECE geçerli JSON döndür:
       if (!match2) throw new Error('OpenAI geçerli JSON döndürmedi. Ham yanıt: ' + raw.slice(0, 400));
       const aiList = JSON.parse(match2[0]);
 
+      const emailResults = await Promise.allSettled(aiList.map(p => findCompanyEmail(p.firma, p.website)));
       const prospects = [];
-      for (const p of aiList) {
-        const email = await findCompanyEmail(p.firma, p.website);
+      aiList.forEach((p, i) => {
+        const email = emailResults[i].status === 'fulfilled' ? emailResults[i].value : null;
         if (email) prospects.push({ firma: p.firma, unvan: p.unvan, email, alan: p.alan, not: p.not });
-      }
+      });
       return res.json({ ok: true, prospects });
 
     } else {
