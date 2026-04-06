@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script>
 tailwind.config = {
   darkMode: 'class',
@@ -509,7 +510,11 @@ select.field-input { cursor: pointer; }
         </div>
         <div class="notice notice-ind">
           <span class="material-symbols-outlined text-[15px] flex-shrink-0">info</span>
-          API anahtarınız yalnızca tarayıcı belleğinde tutulur, hiçbir yere kaydedilmez.
+          <span>API anahtarınız yalnızca tarayıcı belleğinde tutulur, hiçbir yere kaydedilmez. Anahtarı şuradan edinebilirsiniz:
+            <a href="https://console.anthropic.com/settings/keys" target="_blank" class="underline font-semibold hover:opacity-80">Claude</a> ·
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline font-semibold hover:opacity-80">Gemini</a> ·
+            <a href="https://platform.openai.com/api-keys" target="_blank" class="underline font-semibold hover:opacity-80">OpenAI</a>
+          </span>
         </div>
       </div>
     </div>
@@ -1257,7 +1262,13 @@ async function doSend() {
         }
       });
       localStorage.setItem('stajHistory', JSON.stringify(history));
-      if (S.sentCount > 0) { completedSteps.add(5); refreshSidebar(currentStep); el('yeniBasvuruBtn').disabled = false; }
+      if (S.sentCount > 0) {
+        completedSteps.add(5); refreshSidebar(currentStep); el('yeniBasvuruBtn').disabled = false;
+        // 🎉 Konfeti patlaması
+        confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0, y: 0.65 }, colors: ['#6366f1','#10b981','#f59e0b','#ec4899','#3b82f6'] });
+        confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1, y: 0.65 }, colors: ['#6366f1','#10b981','#f59e0b','#ec4899','#3b82f6'] });
+        setTimeout(() => confetti({ particleCount: 80, spread: 70, origin: { x: 0.5, y: 0.55 }, colors: ['#6366f1','#10b981','#f59e0b','#ec4899'] }), 300);
+      }
       updateStats();
     } else { alert('Hata: ' + (d.error || 'Bilinmeyen hata')); }
   } catch (e) { alert('İstek hatası: ' + e.message); }
