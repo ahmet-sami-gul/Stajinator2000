@@ -149,6 +149,51 @@ tailwind.config = {
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 .fu { animation: fadeUp .22s ease forwards; }
 
+/* ── MOBILE SIDEBAR ── */
+@media (max-width: 767px) {
+  aside#sidebar {
+    transform: translateX(-100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    box-shadow: none;
+  }
+  aside#sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0,0,0,.18);
+  }
+  #sidebarOverlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 40;
+    background: rgba(0,0,0,.35);
+    backdrop-filter: blur(2px);
+  }
+  #sidebarOverlay.show { display: block; }
+  .main-wrap { margin-left: 0 !important; }
+  .topbar-title { display: none; }
+  .topbar-sep { display: none; }
+  .topbar-sub { display: none; }
+  #hamburgerBtn { display: flex !important; }
+}
+
+/* ── SUCCESS BANNER ── */
+#successBanner {
+  display: none;
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-10px);
+  z-index: 9999; background: linear-gradient(135deg,#16a34a,#15803d);
+  color: #fff; border-radius: 16px; padding: 14px 28px;
+  font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 16px;
+  box-shadow: 0 8px 32px rgba(22,163,74,.4); white-space: nowrap;
+  animation: bannerPop .4s cubic-bezier(.175,.885,.32,1.275) forwards;
+  text-align: center; cursor: pointer;
+}
+#successBanner.show { display: block; }
+@keyframes bannerPop {
+  from { opacity:0; transform: translateX(-50%) translateY(-20px) scale(.9); }
+  to   { opacity:1; transform: translateX(-50%) translateY(0)    scale(1); }
+}
+@media (max-width: 767px) {
+  #successBanner { font-size: 13px; padding: 12px 18px; top: 60px; border-radius: 12px; max-width: 90vw; white-space: normal; text-align: center; }
+}
+
 /* Card */
 .card { background: #fff; border: 1px solid #f1f5f9; border-radius: 16px; overflow: hidden; }
 .dark .card { background: #0f172a; border-color: #1e293b; }
@@ -228,7 +273,15 @@ select.field-input { cursor: pointer; }
 <body class="bg-slate-50 dark:bg-[#060609] text-slate-800 dark:text-slate-200 font-sans transition-colors duration-200">
 
 <!-- ═══ SIDEBAR ══════════════════════════════════════════════════════════════ -->
-<aside class="fixed left-0 top-0 h-screen w-[260px] bg-white dark:bg-[#0a0a0f] border-r border-slate-100 dark:border-slate-800/60 flex flex-col z-50 shadow-[1px_0_0_0_rgba(0,0,0,.04)]">
+<!-- Mobile overlay -->
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Success Banner -->
+<div id="successBanner" onclick="this.classList.remove('show')">
+  🥳 E-postalar Başarıyla Gönderildi! 🥳
+</div>
+
+<aside id="sidebar" class="fixed left-0 top-0 h-screen w-[260px] bg-white dark:bg-[#0a0a0f] border-r border-slate-100 dark:border-slate-800/60 flex flex-col z-50 shadow-[1px_0_0_0_rgba(0,0,0,.04)]">
 
   <!-- Logo -->
   <div class="px-5 pt-5 pb-4">
@@ -248,7 +301,7 @@ select.field-input { cursor: pointer; }
   <!-- Navigation -->
   <div class="px-1 mb-1">
     <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2">Başlangıç</div>
-    <div class="nav-item active" id="n0" onclick="goWelcome()">
+    <div class="nav-item active" id="n0" onclick="goWelcome();closeSidebar()">
       <span class="material-symbols-outlined text-[18px]">waving_hand</span>
       <span>Merhaba 👋</span>
     </div>
@@ -258,32 +311,32 @@ select.field-input { cursor: pointer; }
 
   <div class="px-1 flex-1 overflow-y-auto">
     <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2">Adımlar</div>
-    <div class="nav-item" id="n1" onclick="go(1)">
+    <div class="nav-item" id="n1" onclick="go(1);closeSidebar()">
       <span class="material-symbols-outlined text-[18px]">lock</span>
       <span>SMTP & API</span>
       <div class="step-num ml-auto" id="sn1">1</div>
     </div>
-    <div class="nav-item" id="n2" onclick="go(2)">
+    <div class="nav-item" id="n2" onclick="go(2);closeSidebar()">
       <span class="material-symbols-outlined text-[18px]">person</span>
       <span>Başvuru Bilgileri</span>
       <div class="step-num ml-auto" id="sn2">2</div>
     </div>
-    <div class="nav-item" id="n3" onclick="go(3)">
+    <div class="nav-item" id="n3" onclick="go(3);closeSidebar()">
       <span class="material-symbols-outlined text-[18px]">category</span>
       <span>Alan Seçimi</span>
       <div class="step-num ml-auto" id="sn3">3</div>
     </div>
-    <div class="nav-item" id="n4" onclick="go(4)">
+    <div class="nav-item" id="n4" onclick="go(4);closeSidebar()">
       <span class="material-symbols-outlined text-[18px]">manage_search</span>
       <span>Şirket Araştır</span>
       <div class="step-num ml-auto" id="sn4">4</div>
     </div>
-    <div class="nav-item" id="n5" onclick="go(5)">
+    <div class="nav-item" id="n5" onclick="go(5);closeSidebar()">
       <span class="material-symbols-outlined text-[18px]">send</span>
       <span>Gönder</span>
       <div class="step-num ml-auto" id="sn5">5</div>
     </div>
-    <div class="nav-item" id="n6" onclick="go(6)">
+    <div class="nav-item" id="n6" onclick="go(6);closeSidebar()">
       <span class="material-symbols-outlined text-[18px]">history</span>
       <span>Geçmiş</span>
       <div class="step-num ml-auto" id="sn6">↺</div>
@@ -317,7 +370,7 @@ select.field-input { cursor: pointer; }
   <!-- About link -->
   <div class="h-px bg-slate-100 dark:bg-slate-800/60 mx-4 my-2"></div>
   <div class="px-1 pb-4">
-    <div class="nav-item" id="n7" onclick="goAbout()">
+    <div class="nav-item" id="n7" onclick="goAbout();closeSidebar()">
       <span class="material-symbols-outlined text-[18px]">info</span>
       <span>Hakkında</span>
     </div>
@@ -325,13 +378,18 @@ select.field-input { cursor: pointer; }
 </aside>
 
 <!-- ═══ MAIN ═════════════════════════════════════════════════════════════════ -->
-<div class="ml-[260px] flex flex-col min-h-screen">
+<div class="main-wrap ml-[260px] flex flex-col min-h-screen">
 
   <!-- TOPBAR -->
-  <header class="sticky top-0 z-40 bg-white/80 dark:bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800/60 flex items-center px-8 py-3 gap-4">
-    <div class="font-head font-extrabold text-[15px] tracking-tight text-slate-800 dark:text-slate-100">Stajin<span class="text-indigo-500">atör</span>2000</div>
-    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700"></div>
-    <div class="text-[11px] font-mono text-slate-400">Staj Başvuru Ajanı</div>
+  <header class="sticky top-0 z-40 bg-white/80 dark:bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800/60 flex items-center px-4 md:px-8 py-3 gap-3">
+    <!-- Hamburger (mobile only) -->
+    <button id="hamburgerBtn" onclick="toggleSidebar()" style="display:none"
+      class="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 hover:border-indigo-400 hover:text-indigo-500 transition-all flex-shrink-0">
+      <span class="material-symbols-outlined text-[18px]">menu</span>
+    </button>
+    <div class="topbar-title font-head font-extrabold text-[15px] tracking-tight text-slate-800 dark:text-slate-100">Stajin<span class="text-indigo-500">atör</span>2000</div>
+    <div class="topbar-sep w-px h-4 bg-slate-200 dark:bg-slate-700"></div>
+    <div class="topbar-sub text-[11px] font-mono text-slate-400">Staj Başvuru Ajanı</div>
     <div class="ml-auto flex items-center gap-3">
       <!-- Connection status -->
       <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
@@ -347,7 +405,7 @@ select.field-input { cursor: pointer; }
   </header>
 
   <!-- CONTENT -->
-  <main class="flex-1 px-8 py-8 max-w-4xl mx-auto w-full">
+  <main class="flex-1 px-4 md:px-8 py-6 md:py-8 max-w-4xl mx-auto w-full">
 
   <!-- ─── S0: KARŞILAMA ───────────────────────────────────────────────────── -->
   <div class="sec active" id="s0">
@@ -940,18 +998,21 @@ const S = {
 
 /* ── AREA DATA ── */
 const CATEGORIES = [
-  { label: 'Teknoloji & Yazılım',    items: ['Yazılım Geliştirme','Yapay Zekâ','Veri Bilimi','Veri Analitiği','Siber Güvenlik','Bulut Bilişim','DevOps','Gömülü Sistemler'] },
-  { label: 'Robotik & Mühendislik',  items: ['Robotik','Mekatronik','Elektrik-Elektronik','Mekanik Tasarım'] },
-  { label: 'Sanayi & Üretim',        items: ['Otomotiv','Havacılık ve Uzay','Savunma Sanayi','Enerji Sistemleri','Batarya Teknolojileri','Üretim Mühendisliği'] },
-  { label: 'Endüstri & Lojistik',    items: ['Endüstri Mühendisliği','Kalite Kontrol','Tedarik Zinciri','Lojistik'] },
-  { label: 'İnşaat & Mimarlık',      items: ['İnşaat Mühendisliği','Mimarlık','İç Mimarlık','Şehir ve Bölge Planlama'] },
-  { label: 'Biyomedikal & Kimya',    items: ['Biyomedikal','Kimya Mühendisliği','Malzeme Bilimi','Nanoteknoloji','Çevre Mühendisliği'] },
-  { label: 'Finans & Ekonomi',       items: ['Finans','Muhasebe','Denetim','Bankacılık','Ekonomi','Uluslararası Ticaret'] },
-  { label: 'İşletme & Yönetim',      items: ['İşletme','Pazarlama','Satış','E-Ticaret','İş Geliştirme','İnsan Kaynakları'] },
-  { label: 'Hukuk & Sosyal Bilimler',items: ['Hukuk','Psikoloji','Sosyoloji','Siyaset Bilimi','Uluslararası İlişkiler'] },
-  { label: 'Medya & İletişim',       items: ['Medya ve İletişim','Gazetecilik','Halkla İlişkiler','Reklamcılık'] },
-  { label: 'Tasarım',                items: ['Grafik Tasarım','UI/UX Tasarım','Endüstriyel Tasarım'] },
-  { label: 'Diğer',                  items: ['Eğitim Teknolojileri','Akademik Araştırma','Biyoloji','Moleküler Biyoloji ve Genetik','Sağlık Yönetimi','Tıp Teknolojileri','Farmakoloji','Turizm ve Otelcilik','Gastronomi','Spor Yönetimi','Kamu Yönetimi','Girişimcilik','Ürün Yönetimi'] }
+  { label: 'Teknoloji & Yazılım',       items: ['Yazılım Geliştirme','Web Geliştirme','Mobil Uygulama Geliştirme','Yapay Zekâ','Makine Öğrenmesi','Veri Bilimi','Veri Analitiği','Veri Mühendisliği','Siber Güvenlik','Bulut Bilişim','DevOps','MLOps','Gömülü Sistemler','Oyun Geliştirme','Blockchain','AR/VR Geliştirme','Yazılım Test & QA','Bilgisayar Görüşü','Doğal Dil İşleme','Bilgi Güvenliği'] },
+  { label: 'Robotik & Mühendislik',     items: ['Robotik','Mekatronik','Elektrik-Elektronik','Mekanik Tasarım','Kontrol Sistemleri','Otomasyon','PLC Programlama','Güç Elektroniği','Anten & RF Mühendisliği','Biyomedikal Mühendisliği'] },
+  { label: 'Sanayi & Üretim',           items: ['Otomotiv','Havacılık ve Uzay','Savunma Sanayi','Enerji Sistemleri','Yenilenebilir Enerji','Batarya Teknolojileri','Üretim Mühendisliği','Nükleer Enerji','Petrol & Doğalgaz','Tekstil Mühendisliği','Gıda Mühendisliği','Ambalaj Teknolojileri'] },
+  { label: 'Endüstri & Lojistik',       items: ['Endüstri Mühendisliği','Kalite Kontrol','Tedarik Zinciri','Lojistik','Operasyon Yönetimi','Depo Yönetimi','Satın Alma','Süreç İyileştirme','Lean & Six Sigma'] },
+  { label: 'İnşaat & Mimarlık',         items: ['İnşaat Mühendisliği','Mimarlık','İç Mimarlık','Şehir ve Bölge Planlama','Peyzaj Mimarlığı','Geoteknik Mühendisliği','Yapı Denetimi','BIM Modellemesi','Çevre Düzenlemesi'] },
+  { label: 'Biyomedikal & Sağlık',      items: ['Biyomedikal','Kimya Mühendisliği','Malzeme Bilimi','Nanoteknoloji','Çevre Mühendisliği','Farmakoloji','Sağlık Yönetimi','Tıp Teknolojileri','Biyoteknoloji','Genetik & Genomik','Klinik Araştırma','Tıbbi Görüntüleme'] },
+  { label: 'Finans & Ekonomi',          items: ['Finans','Muhasebe','Denetim','Bankacılık','Ekonomi','Uluslararası Ticaret','Sigortacılık','Risk Yönetimi','Aktüerya','Yatırım Analizi','Kripto & Fintech','Vergi Danışmanlığı','Hazine'] },
+  { label: 'İşletme & Yönetim',         items: ['İşletme','Pazarlama','Dijital Pazarlama','SEO & SEM','İçerik Pazarlama','Satış','E-Ticaret','İş Geliştirme','İnsan Kaynakları','Marka Yönetimi','Kurumsal İletişim','Müşteri Deneyimi','Proje Yönetimi','Strateji & Danışmanlık'] },
+  { label: 'Hukuk & Sosyal Bilimler',   items: ['Hukuk','Psikoloji','Sosyoloji','Siyaset Bilimi','Uluslararası İlişkiler','Felsefe','Antropoloji','Kriminoloji','Sosyal Hizmetler','Davranış Bilimleri'] },
+  { label: 'Medya & İletişim',          items: ['Medya ve İletişim','Gazetecilik','Halkla İlişkiler','Reklamcılık','Sosyal Medya Yönetimi','Video Prodüksiyon','Podcast & Yayıncılık','Oyunculuk & Performans','Fotoğrafçılık','Senaryo Yazarlığı'] },
+  { label: 'Tasarım & Yaratıcı',        items: ['Grafik Tasarım','UI/UX Tasarım','Endüstriyel Tasarım','Animasyon','3D Modelleme','Moda Tasarımı','İllüstrasyon','Tipografi','Marka & Kimlik Tasarımı','Hareketli Grafik'] },
+  { label: 'Eğitim & Akademi',          items: ['Eğitim Teknolojileri','Akademik Araştırma','Öğretmenlik','Kütüphanecilik','Eğitim Yönetimi','Uzaktan Eğitim','Dil Eğitimi','Özel Eğitim'] },
+  { label: 'Turizm, Spor & Yaşam',      items: ['Turizm ve Otelcilik','Gastronomi','Şeflik','Etkinlik Yönetimi','Spor Yönetimi','Fitness & Koçluk','Sivil Toplum & NGO','Kamu Yönetimi'] },
+  { label: 'Girişim & Ürün',            items: ['Girişimcilik','Ürün Yönetimi','Büyüme Hacking','Venture Capital','Startup Danışmanlığı','Teknoloji Transferi'] },
+  { label: 'Biyoloji & Çevre',          items: ['Biyoloji','Moleküler Biyoloji ve Genetik','Ekoloji','Çevre Bilimleri','Ormancılık','Ziraat Mühendisliği','Veterinerlik','Deniz Bilimleri','Meteoroloji'] },
 ];
 
 /* ── NAVIGATION ── */
@@ -1279,6 +1340,8 @@ async function doSend() {
         confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0, y: 0.65 }, colors: ['#6366f1','#10b981','#f59e0b','#ec4899','#3b82f6'] });
         confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1, y: 0.65 }, colors: ['#6366f1','#10b981','#f59e0b','#ec4899','#3b82f6'] });
         setTimeout(() => confetti({ particleCount: 80, spread: 70, origin: { x: 0.5, y: 0.55 }, colors: ['#6366f1','#10b981','#f59e0b','#ec4899'] }), 300);
+        // 🏆 Başarı banner
+        showSuccessBanner(S.sentCount);
       }
       updateStats();
     } else { alert('Hata: ' + (d.error || 'Bilinmeyen hata')); }
@@ -1316,6 +1379,30 @@ function onProviderChange() {
   el('apiKeyLabel').textContent = meta.label;
   el('apiKey').placeholder = meta.placeholder;
   S.apiProvider = p;
+}
+
+/* ── MOBILE SIDEBAR ── */
+function toggleSidebar() {
+  const sb = el('sidebar'); const ov = el('sidebarOverlay');
+  const isOpen = sb.classList.contains('open');
+  sb.classList.toggle('open', !isOpen);
+  ov.classList.toggle('show', !isOpen);
+}
+function closeSidebar() {
+  el('sidebar').classList.remove('open');
+  el('sidebarOverlay').classList.remove('show');
+}
+
+/* ── SUCCESS BANNER ── */
+let bannerTimer = null;
+function showSuccessBanner(count) {
+  const b = el('successBanner');
+  b.textContent = `🥳 ${count} E-posta Başarıyla Gönderildi! 🥳`;
+  b.classList.remove('show');
+  void b.offsetWidth; // reflow to restart animation
+  b.classList.add('show');
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => b.classList.remove('show'), 5000);
 }
 
 /* ── THEME ── */
