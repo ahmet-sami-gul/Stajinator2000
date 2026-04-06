@@ -699,6 +699,7 @@ async function go(step) {
       S.apiKey      = el('apiKey').value.trim();
       S.apiProvider = el('apiProvider').value || 'claude';
       if (!S.smtp.user || !S.smtp.pass) { alert('Lütfen SMTP kullanıcı adı ve şifresini girin.'); return; }
+      if (!smtpVerified) { alert('Devam etmeden önce "Bağlantıyı Test Et" butonuna basıp SMTP bağlantısını doğrulayın.'); return; }
       completedSteps.add(1);
     }
     if (step === 3) {
@@ -755,6 +756,14 @@ function updateStats() {
 }
 
 /* ── SMTP TEST ─────────────────────────────────────────────────────────────── */
+let smtpVerified = false;
+
+function resetSmtpVerified() {
+  smtpVerified = false;
+  el('connDot').className = 'dot idle';
+  el('connLabel').textContent = 'bağlantı test edilmedi';
+}
+
 async function testSmtp() {
   const smtp = {
     host: el('smtpHost').value.trim(),
@@ -773,10 +782,12 @@ async function testSmtp() {
     });
     const d = await r.json();
     if (d.ok) {
+      smtpVerified = true;
       log('smtpLog', 'Bağlantı başarılı ✓', 'lok');
       el('connDot').className = 'dot ok';
       el('connLabel').textContent = 'bağlı — ' + smtp.user;
     } else {
+      smtpVerified = false;
       log('smtpLog', 'Hata: ' + d.error, 'lerr');
       el('connDot').className = 'dot err';
       el('connLabel').textContent = 'bağlantı hatası';
@@ -1224,6 +1235,12 @@ el('studentName').addEventListener('input', () => {
 ['studentName','smtpUser','emailSubject','coverLetter','contactEmail','studentPhone','studentLinkedIn'].forEach(id => {
   el(id).addEventListener('input', updateEmailPreview);
 });
+
+// SMTP alanı değişince doğrulamayı sıfırla
+['smtpHost','smtpPort','smtpUser','smtpPass'].forEach(id => {
+  el(id).addEventListener('input', resetSmtpVerified);
+});
+el('smtpPort').addEventListener('change', resetSmtpVerified);
 updateEmailPreview();
 /* ── HAKKINDA ── */
 function goAbout() {
