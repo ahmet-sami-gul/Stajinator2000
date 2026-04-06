@@ -508,13 +508,24 @@ select.field-input { cursor: pointer; }
             <input id="apiKey" type="password" class="field-input" placeholder="sk-ant-api03-..." autocomplete="off">
           </div>
         </div>
-        <div class="notice notice-ind">
-          <span class="material-symbols-outlined text-[15px] flex-shrink-0">info</span>
-          <span>API anahtarınız yalnızca tarayıcı belleğinde tutulur, hiçbir yere kaydedilmez. Anahtarı şuradan edinebilirsiniz:
-            <a href="https://console.anthropic.com/settings/keys" target="_blank" class="underline font-semibold hover:opacity-80">Claude</a> ·
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline font-semibold hover:opacity-80">Gemini</a> ·
-            <a href="https://platform.openai.com/api-keys" target="_blank" class="underline font-semibold hover:opacity-80">OpenAI</a>
-          </span>
+        <div class="notice notice-ind flex-col gap-3">
+          <div class="flex gap-2 items-start">
+            <span class="material-symbols-outlined text-[15px] flex-shrink-0 mt-0.5">info</span>
+            <span class="text-[12px] leading-relaxed">
+              <strong>API anahtarı nedir?</strong> Yapay zeka sağlayıcıları (Anthropic, Google, OpenAI), şirket araştırması için kullandığımız servislerine erişim izni tanıyan gizli bir anahtar verir. Bu anahtar sizin adınıza AI'ya istek gönderir; kullanım ücretleri kendi hesabınıza yansır. Sayfayı kapattığınızda anahtar bellekten silinir, hiçbir yere kaydedilmez.
+            </span>
+          </div>
+          <div class="flex gap-2 items-start">
+            <span class="material-symbols-outlined text-[15px] flex-shrink-0 mt-0.5">key</span>
+            <span class="text-[12px] leading-relaxed">
+              <strong>Nasıl edinilir?</strong> Aşağıdaki bağlantılardan ücretsiz hesap açıp API anahtarı oluşturabilirsiniz. Gemini ücretsiz kullanım kotasıyla başlar; Claude ve OpenAI küçük bir başlangıç kredisi sunar.
+              <span class="mt-1 flex gap-3 flex-wrap">
+                <a href="https://console.anthropic.com/settings/keys" target="_blank" class="underline font-semibold hover:opacity-80">Claude (Anthropic)</a>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline font-semibold hover:opacity-80">Gemini (Google)</a>
+                <a href="https://platform.openai.com/api-keys" target="_blank" class="underline font-semibold hover:opacity-80">OpenAI</a>
+              </span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
