@@ -1149,12 +1149,10 @@ function goAbout() {
 
 /* ── WELCOME MODAL ── */
 function showWelcomeModal() {
-  if (localStorage.getItem('welcomeSeen')) return;
   el('welcomeModal').classList.remove('hidden');
 }
 function closeWelcomeModal() {
   el('welcomeModal').classList.add('hidden');
-  localStorage.setItem('welcomeSeen', '1');
 }
 </script>
 
