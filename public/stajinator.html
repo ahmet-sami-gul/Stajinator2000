@@ -550,7 +550,7 @@ Saygılarımla,
 
   <div style="display:flex;justify-content:space-between;align-items:center">
     <button class="btn btn-g" onclick="go(4)">← Geri</button>
-    <button class="btn btn-p" id="yeniBasvuruBtn" onclick="yeniBasvuru()" style="display:none;">✦ Yeni Başvuru</button>
+    <button class="btn btn-p" id="yeniBasvuruBtn" onclick="yeniBasvuru()" disabled>✦ Yeni Başvuru</button>
   </div>
 </div>
 
@@ -1160,7 +1160,7 @@ async function doSend() {
       if (S.sentCount > 0) {
         completedSteps.add(5);
         refreshSidebar(currentStep);
-        el('yeniBasvuruBtn').style.display = 'inline-flex';
+        el('yeniBasvuruBtn').disabled = false;
       }
       updateStats();
     } else {
@@ -1284,7 +1284,7 @@ function yeniBasvuru() {
   S.prospects = [];
   S.selectedAreas.clear();
   S.sentCount = 0;
-  el('yeniBasvuruBtn').style.display = 'none';
+  el('yeniBasvuruBtn').disabled = true;
   renderProspectTable();
   document.querySelectorAll('.chk-pill').forEach(p => p.classList.remove('on'));
   updateStats();
