@@ -21,7 +21,7 @@ Yapay zeka destekli staj başvuru asistanı. Sektör seçiminden toplu e-posta g
 
 ### Vercel (önerilen)
 
-Repo'yu fork'layın ve [vercel.com](https://vercel.com) üzerinden import edin. Ekstra ayar gerekmez.
+https://stajinator2000-u46w.vercel.app/stajinator.html adresine gidin veya Repo'yu fork'layın ve [vercel.com](https://vercel.com) üzerinden import edin. Ekstra ayar gerekmez.
 
 ### Yerel Çalıştırma
 
